@@ -5,6 +5,8 @@ import com.github.glue.event.CommandEvent;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
+import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
+
 /**
  * @author shizi
  * @since 2020/3/4 下午7:03
@@ -51,6 +53,25 @@ public class NettyClientConnector {
         sender.setAddr(addr);
         sender.setCmd(cmd);
         sender.setGroup(group);
+        return sender;
+    }
+
+    public <T> NettySender<T> asSender(String cmd, Class<T> tClass) {
+        NettySender<T> sender = new NettySender<>();
+        sender.setChannel(getChannel());
+        sender.setAddr(addr);
+        sender.setCmd(cmd);
+        sender.setGroup(DEFAULT_GROUP_STR);
+        sender.setTClass(tClass);
+        return sender;
+    }
+
+    public NettySender asSender(String cmd) {
+        NettySender sender = new NettySender();
+        sender.setChannel(getChannel());
+        sender.setAddr(addr);
+        sender.setCmd(cmd);
+        sender.setGroup(DEFAULT_GROUP_STR);
         return sender;
     }
 

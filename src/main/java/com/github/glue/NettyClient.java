@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午12:18
@@ -123,6 +125,10 @@ public class NettyClient extends AbstractRemote {
     @SuppressWarnings("unchecked")
     public Boolean send(String addr, String group, String cmd, Object data) {
         return clientConnectManager.getConnector(addr).asSender(group, cmd).send(data);
+    }
+
+    public Boolean send(String addr, String cmd, Object data) {
+        return send(addr, DEFAULT_GROUP_STR, cmd, data);
     }
 
     @SuppressWarnings("unchecked")
