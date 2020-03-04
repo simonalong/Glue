@@ -48,31 +48,15 @@ public class NettyClientConnector {
     }
 
     public NettySender asSender(String group, String cmd) {
-        NettySender sender = new NettySender();
-        sender.setChannel(getChannel());
-        sender.setAddr(addr);
-        sender.setCmd(cmd);
-        sender.setGroup(group);
-        return sender;
+        return asSender(group, cmd, Object.class);
     }
 
     public <T> NettySender<T> asSender(String cmd, Class<T> tClass) {
-        NettySender<T> sender = new NettySender<>();
-        sender.setChannel(getChannel());
-        sender.setAddr(addr);
-        sender.setCmd(cmd);
-        sender.setGroup(DEFAULT_GROUP_STR);
-        sender.setTClass(tClass);
-        return sender;
+        return asSender(DEFAULT_GROUP_STR, cmd, tClass);
     }
 
     public NettySender asSender(String cmd) {
-        NettySender sender = new NettySender();
-        sender.setChannel(getChannel());
-        sender.setAddr(addr);
-        sender.setCmd(cmd);
-        sender.setGroup(DEFAULT_GROUP_STR);
-        return sender;
+        return asSender(cmd, Object.class);
     }
 
     public <T> NettySender<T> asSender(CommandEvent event, Class<T> tClass) {
