@@ -105,23 +105,6 @@ public void testClient() {
 }
 ```
 
-请求和响应实体
-```java
-@Data
-public class QueryReq implements Serializable {
-
-    private String name;
-    private Long age;
-}
-
-@Data
-public class QueryRsp implements Serializable {
-
-    private String data;
-    private String success;
-}
-```
-
 ### 客户端消息处理器
 ```java
 /**
@@ -146,6 +129,23 @@ public class ClientGroup1Controller {
     public void queryErr(NettyErrorResponse errorResponse) {
         System.out.println("好的，收到" + errorResponse.toString());
     }
+}
+```
+
+###### 请求和响应实体
+```java
+@Data
+public class QueryReq implements Serializable {
+
+    private String name;
+    private Long age;
+}
+
+@Data
+public class QueryRsp implements Serializable {
+
+    private String data;
+    private String success;
 }
 ```
 
