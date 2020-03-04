@@ -105,7 +105,7 @@ public void testClient() {
 }
 ```
 
-请求和响应代码
+请求和响应实体
 ```java
 @Data
 public class QueryReq implements Serializable {
@@ -124,6 +124,9 @@ public class QueryRsp implements Serializable {
 
 ### 客户端消息处理器
 ```java
+/**
+* 请保持在同一个组中即可
+*/
 @NettyController("group1")
 public class ClientGroup1Controller {
 
@@ -195,7 +198,7 @@ public @interface NettyController {
 ```
 
 ### @CommandMapping
-修饰函数
+修饰函数，表示该函数接收的命令和执行完之后返回的命令
 ```java
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
