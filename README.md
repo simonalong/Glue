@@ -1,6 +1,6 @@
-# Glue（网络通信框架）
+# Glue（网络通信组件）
 
-Glue 是一个基于netty设计的通信模块，借鉴spring-web的controller用法，设计通讯交互思路，让通讯交互更加简单。
+Glue 是一个基于netty设计的通信组件，借鉴spring-web的controller用法，设计通讯交互思路，让通讯交互更加简单。
 
 # 快速入门
 比如说我们要实现如下的模块交互图，那么使用如下框架就会非常简单，只需要在Controller内部函数之间配置即可
