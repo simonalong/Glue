@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午1:33
@@ -36,6 +38,11 @@ public class NettyCommand {
 
     public NettyCommand(String group, String cmd, Object data) {
         this.event = new CommandEvent(group, cmd);
+        this.data = data;
+    }
+
+    public NettyCommand(String cmd, Object data) {
+        this.event = new CommandEvent(cmd);
         this.data = data;
     }
 

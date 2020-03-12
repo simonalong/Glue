@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 public class AbstractRemote {
 
-
     /**
      * 添加对应的Controller
      *

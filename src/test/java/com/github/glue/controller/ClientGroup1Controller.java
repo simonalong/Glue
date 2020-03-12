@@ -27,4 +27,12 @@ public class ClientGroup1Controller {
     public void queryErr(NettyErrorResponse errorResponse) {
         System.out.println("好的，收到" + errorResponse.toString());
     }
+
+    /**
+     * 收到服务端信息
+     */
+    @CommandMapping(request = "rsvServer")
+    public void rsvServer(ServerSenderReq serverSenderReq) {
+        System.out.println("收到服务端信息：" + serverSenderReq.toString());
+    }
 }

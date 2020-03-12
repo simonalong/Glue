@@ -9,22 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static com.github.glue.GlueConstant.LOCK_TIMEOUT_MILLIS;
 
 /**
+ * 客户端的链接管理器
+ *
  * @author shizi
  * @since 2020/3/4 下午5:46
  */
 @Slf4j
-public class ClientConnectManager {
+public class ClientConnectManager implements ConnectManager {
 
     private Bootstrap bootstrap;
-    private Map<String, NettyClientConnector> channelMap = new ConcurrentHashMap<>();
-    private final Lock lockChannelTables = new ReentrantLock();
+    private Map<String, NettyClientConnector> connectorMap = new ConcurrentHashMap<>();
     @Setter
     private int connectTimeoutMillis = 3000;
 
@@ -32,54 +28,60 @@ public class ClientConnectManager {
         this.bootstrap = bootstrap;
     }
 
-    public NettyClientConnector getConnector(String addr) {
-        NettyClientConnector cw = this.channelMap.get(addr);
-        if (cw != null && cw.isOK()) {
-            return cw;
-        }
-
-        try {
-            if (this.lockChannelTables.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
-                try {
-                    boolean createNewConnection;
-                    cw = this.channelMap.get(addr);
-                    if (cw != null) {
-                        if (cw.isOK()) {
-                            return cw;
-                        } else if (!cw.getChannelFuture().isDone()) {
-                            createNewConnection = false;
-                        } else {
-                            this.channelMap.remove(addr);
-                            createNewConnection = true;
-                        }
-                    } else {
-                        createNewConnection = true;
-                    }
-
-                    if (createNewConnection) {
-                        ChannelFuture channelFuture = this.bootstrap.connect(ChannelHelper.string2SocketAddress(addr));
-                        log.info("createChannel: begin to addConnect remote host[{}] asynchronously", addr);
-                        cw = new NettyClientConnector(channelFuture, addr);
-                        this.channelMap.put(addr, cw);
-                    }
-                } catch (Exception e) {
-                    log.error("createChannel: create channel exception", e);
-                } finally {
-                    this.lockChannelTables.unlock();
-                }
+    public synchronized void addConnect(String addr) {
+        if (connectorMap.containsKey(addr)) {
+            NettyClientConnector clientConnector = connectorMap.get(addr);
+            if (clientConnector.getChannelFuture().isDone()) {
+                return;
             } else {
-                log.warn("createChannel: try to lock channel table, but timeout, {}ms", LOCK_TIMEOUT_MILLIS);
+                connectorMap.remove(addr);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
 
-        if (cw != null) {
-            ChannelFuture channelFuture = cw.getChannelFuture();
+        ChannelFuture channelFuture = this.bootstrap.connect(ChannelHelper.string2SocketAddress(addr));
+        this.connectorMap.put(addr, new NettyClientConnector(channelFuture, addr));
+        log.info("createChannel: begin to addConnect remote host[{}] asynchronously", addr);
+    }
+
+    @Override
+    public synchronized void addConnect(Connector connector) {
+        if (!(connector instanceof NettyClientConnector)) {
+            return;
+        }
+        String addr = connector.getAddr();
+        if (connectorMap.containsKey(addr)) {
+            try {
+                connectorMap.get(addr).close();
+            } catch (Exception ignored) {
+
+            }
+            connectorMap.remove(addr);
+        }
+
+        connectorMap.put(addr, (NettyClientConnector) connector);
+        log.info("createChannel: begin to addConnect remote host[{}] asynchronously", addr);
+    }
+
+    @Override
+    public void closeConnect(Channel channel) {
+        channel.close()
+            .addListener(
+                future -> log.info("closeChannel: close the connection to remote address[{}] result: {}", ChannelHelper.parseChannelRemoteAddr(channel), future.isSuccess()));
+    }
+
+    public NettyClientConnector getConnector(String addr) {
+        if (!connectorMap.containsKey(addr)) {
+            return null;
+        }
+
+        NettyClientConnector connector = connectorMap.get(addr);
+
+        if (connector != null) {
+            ChannelFuture channelFuture = connector.getChannelFuture();
             if (channelFuture.awaitUninterruptibly(connectTimeoutMillis)) {
-                if (cw.isOK()) {
+                if (connector.isOK()) {
                     log.info("createChannel: addConnect remote host[{}] success, {}", addr, channelFuture.toString());
-                    return cw;
+                    return connector;
                 } else {
                     log.warn("createChannel: addConnect remote host[" + addr + "] failed, " + channelFuture.toString(), channelFuture.cause());
                 }
@@ -88,13 +90,5 @@ public class ClientConnectManager {
             }
         }
         return null;
-    }
-
-    public Channel getChannel(String addr) throws InterruptedException {
-        return getConnector(addr).getChannel();
-    }
-
-    public void addConnect(String addr) throws InterruptedException {
-        getChannel(addr);
     }
 }

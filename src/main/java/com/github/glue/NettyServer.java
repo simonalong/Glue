@@ -2,7 +2,8 @@ package com.github.glue;
 
 import com.github.glue.coder.NettyDecoder;
 import com.github.glue.coder.NettyEncoder;
-import com.github.glue.connect.NettyReceiverChannelManager;
+import com.github.glue.connect.NettyServerConnector;
+import com.github.glue.connect.ServerConnectManager;
 import com.github.glue.event.CommandEventDispatcher;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -20,10 +21,13 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
 
 /**
  * @author shizi
@@ -33,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NettyServer extends AbstractRemote {
 
     private static final NettyServer INSTANCE = new NettyServer();
-    private Boolean initFlag = false;
+    private volatile boolean startFlag = false;
     private String addr;
     private EventLoopGroup boss;
     private EventLoopGroup worker;
@@ -67,6 +71,7 @@ public class NettyServer extends AbstractRemote {
     private NettyEncoder encoder;
     private Map<ChannelOption, Object> channelOptionObjectMap;
     private Map<ChannelOption, Object> channelChildOptionObjectMap;
+    private ServerConnectManager serverConnectManager;
 
     private NettyServer() {}
 
@@ -129,28 +134,31 @@ public class NettyServer extends AbstractRemote {
         encoder = new NettyEncoder();
         channelOptionObjectMap = new HashMap<>(8);
         channelChildOptionObjectMap = new HashMap<>(8);
-        this.initFlag = true;
+        serverConnectManager = new ServerConnectManager();
         return this;
     }
 
-    public void start() {
-        if (!initFlag) {
-            throw new RuntimeException("please first init");
+    @SuppressWarnings("unchecked")
+    public synchronized void start() {
+        if (startFlag) {
+            return;
         }
 
-        this.serverBootstrap.group(this.boss, this.worker).channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-            // 链接队列大小
-            .option(ChannelOption.SO_BACKLOG, 1024)
-            // 允许重复使用本地地址和端口
-            .option(ChannelOption.SO_REUSEADDR, true)
-            // 禁止使用Nagle算法，使用于小数据即时传输
-            .childOption(ChannelOption.TCP_NODELAY, true)
-            // 内存配置
-            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            // 发送端缓冲区大小（单位Byte，默认 65535，即64k）
-            .childOption(ChannelOption.SO_SNDBUF, sndBufSize)
-            // 接收端缓冲区大小（单位Byte，默认 65535，即64k）
-            .childOption(ChannelOption.SO_RCVBUF, rcvBufSize).childHandler(new ChannelInitializer<SocketChannel>() {
+        serverBootstrap.group(this.boss, this.worker);
+        serverBootstrap.channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
+        // 默认：链接队列大小
+        serverBootstrap.option(ChannelOption.SO_BACKLOG, 1024);
+        // 默认：允许重复使用本地地址和端口
+        serverBootstrap.option(ChannelOption.SO_REUSEADDR, true);
+        // 默认：禁止使用Nagle算法，使用于小数据即时传输
+        serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
+        // 默认：内存配置
+        serverBootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        // 默认：发送端缓冲区大小（单位Byte，默认 65535，即64k）
+        serverBootstrap.childOption(ChannelOption.SO_SNDBUF, sndBufSize);
+        // 默认：接收端缓冲区大小（单位Byte，默认 65535，即64k）
+        serverBootstrap.childOption(ChannelOption.SO_RCVBUF, rcvBufSize);
+        serverBootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline()
@@ -162,11 +170,15 @@ public class NettyServer extends AbstractRemote {
             }
         });
 
+        channelOptionObjectMap.forEach((k, v) -> serverBootstrap.option(k, v));
+        channelChildOptionObjectMap.forEach((k, v) -> serverBootstrap.childOption(k, v));
+
         try {
             ChannelFuture channelFuture = serverBootstrap.bind(ChannelHelper.string2SocketAddress(addr)).sync();
             if (channelFuture.isSuccess()) {
                 log.info("netty server start success");
             }
+            startFlag = true;
         } catch (InterruptedException e) {
             throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e);
         }
@@ -178,6 +190,35 @@ public class NettyServer extends AbstractRemote {
 
     public <T> void addChildOption(ChannelOption<T> option, T value) {
         channelChildOptionObjectMap.put(option, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void sendAll(String group, String cmd, Object data) {
+        Collection<NettyServerConnector> serverConnectors = serverConnectManager.getAllConnector();
+        serverConnectors.forEach(connector -> connector.asSender(group, cmd).send(data));
+    }
+
+    @SuppressWarnings("unchecked")
+    public void sendAll(String cmd, Object data) {
+        Collection<NettyServerConnector> serverConnectors = serverConnectManager.getAllConnector();
+        serverConnectors.forEach(connector -> connector.asSender(cmd).send(data));
+    }
+
+    public void send(String addr, String group, String cmd, Object data) {
+        send(addr, new NettyCommand(group, cmd, data));
+    }
+
+    public void send(String addr, String cmd, Object data) {
+        send(addr, DEFAULT_GROUP_STR, cmd, data);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void send(String addr, NettyCommand nettyCommand) {
+        NettyServerConnector serverConnector = serverConnectManager.getConnector(addr);
+        if(null == serverConnector){
+            return;
+        }
+        serverConnector.asSender(nettyCommand.getEvent()).send(nettyCommand.getData());
     }
 
     private boolean useEpoll() {
@@ -225,7 +266,7 @@ public class NettyServer extends AbstractRemote {
             log.info("netty server pipeline: channelActive, the channel[{}]", remoteAddress);
             super.channelActive(ctx);
 
-            NettyReceiverChannelManager.getOrAddChannel(ctx.channel());
+            serverConnectManager.addConnect(ctx.channel());
         }
 
         /**
@@ -239,7 +280,7 @@ public class NettyServer extends AbstractRemote {
             log.info("netty server pipeline: channelInactive, the channel[{}]", remoteAddress);
             super.channelInactive(ctx);
 
-            NettyReceiverChannelManager.closeChannel(ctx.channel());
+            serverConnectManager.closeConnect(ctx.channel());
         }
 
         /**
@@ -255,7 +296,8 @@ public class NettyServer extends AbstractRemote {
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
                     log.warn("netty server pipeline: IDLE exception [{}]", remoteAddress);
-                    NettyReceiverChannelManager.closeChannel(ctx.channel());
+
+                    serverConnectManager.closeConnect(ctx.channel());
                 }
             }
 
@@ -265,10 +307,9 @@ public class NettyServer extends AbstractRemote {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-            log.warn("netty server pipeline: exceptionCaught {}", remoteAddress);
-            log.warn("netty server pipeline: exceptionCaught exception.", cause);
+            log.warn("netty server pipeline: address [{}],  exceptionCaught exception.", remoteAddress, cause);
 
-            NettyReceiverChannelManager.closeChannel(ctx.channel());
+            serverConnectManager.closeConnect(ctx.channel());
         }
     }
 }

@@ -3,7 +3,7 @@ package com.github.glue;
 import com.github.glue.controller.ClientGroup1Controller;
 import com.github.glue.controller.QueryReq;
 import com.github.glue.controller.ServerGroup1Controller;
-import io.netty.channel.ChannelOption;
+import com.github.glue.controller.ServerSenderReq;
 import lombok.SneakyThrows;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class NettyTest {
         server.addController(new ServerGroup1Controller());
         server.start();
 
-        while (true){
+        while (true) {
             Thread.sleep(1000);
         }
     }
@@ -85,7 +85,7 @@ public class NettyTest {
     }
 
     @SneakyThrows
-    private void sendWithTime(NettySender<QueryReq> sender){
+    private void sendWithTime(NettySender<QueryReq> sender) {
         int i = 0;
         while (true) {
             if (i > 1000) {
@@ -99,6 +99,27 @@ public class NettyTest {
 
             Thread.sleep(1000);
             i++;
+        }
+    }
+
+    /**
+     * 测试服务端的数据发送
+     */
+    @Test
+    @SneakyThrows
+    public void testServerSender() {
+        NettyServer server = NettyServer.getInstance();
+        server.bind("127.0.0.1:8081");
+        server.addController(new ServerGroup1Controller());
+        server.start();
+
+        while (true) {
+            Thread.sleep(1000);
+            ServerSenderReq senderReq = new ServerSenderReq();
+            senderReq.setNum(11);
+            senderReq.setName("simon");
+            // 服务端广播消息
+            server.sendAll("group1", "rsvServer", senderReq);
         }
     }
 }
