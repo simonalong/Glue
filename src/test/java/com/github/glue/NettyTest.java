@@ -3,11 +3,9 @@ package com.github.glue;
 import com.github.glue.controller.ClientGroup1Controller;
 import com.github.glue.controller.QueryReq;
 import com.github.glue.controller.ServerGroup1Controller;
+import io.netty.channel.ChannelOption;
 import lombok.SneakyThrows;
 import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author shizi
@@ -37,10 +35,10 @@ public class NettyTest {
     @Test
     @SneakyThrows
     public void testClient() {
-        NettyClient nettyClient = NettyClient.getInstance();
-        nettyClient.addConnect("127.0.0.1:8081");
-        nettyClient.addController(ClientGroup1Controller.class);
-        nettyClient.start();
+        NettyClient client = NettyClient.getInstance();
+        client.addConnect("127.0.0.1:8081");
+        client.addController(ClientGroup1Controller.class);
+        client.start();
 
         int i = 0;
         while (true) {
@@ -51,7 +49,7 @@ public class NettyTest {
             QueryReq queryReq = new QueryReq();
             queryReq.setAge(12L);
             queryReq.setName("simon");
-            nettyClient.send("127.0.0.1:8081", "group1", "getDataReq", queryReq);
+            client.send("127.0.0.1:8081", "group1", "getDataReq", queryReq);
 
             Thread.sleep(1000);
             i++;

@@ -18,10 +18,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -57,6 +54,7 @@ public class NettyClient extends AbstractRemote {
      * 链接的服务端的地址
      */
     private Set<String> connectAddrList;
+    private Map<ChannelOption, Object> channelOptionObjectMap;
 
     private NettyClient() {
         init();
@@ -89,23 +87,26 @@ public class NettyClient extends AbstractRemote {
         bootstrap = new Bootstrap();
         clientConnectManager = new ClientConnectManager(bootstrap);
         connectAddrList = new HashSet<>(12);
+        channelOptionObjectMap = new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized void start() {
         if (startFlag) {
             return;
         }
-        this.bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class)
-            // 禁用小数据拼接后发送
-            .option(ChannelOption.TCP_NODELAY, true)
-            // 长连接标示，客户端和服务端要保持一致，否则有问题
-            .option(ChannelOption.SO_KEEPALIVE, false)
-            // 链接超时（毫秒，默认3秒）
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
-            // 发送端缓冲区大小（单位Byte，默认 65535，即64k）
-            .option(ChannelOption.SO_SNDBUF, sndBufSize)
-            // 接收端缓冲区大小（单位Byte，默认 65535，即64k）
-            .option(ChannelOption.SO_RCVBUF, rcvBufSize).handler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class);
+        // 默认：禁用小数据拼接后发送
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
+        // 默认：不采用keepalive方式的长连接，采用心跳方式的长连接
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, false);
+        // 默认：链接超时（毫秒，默认3秒）
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis);
+        // 默认：发送端缓冲区大小（单位Byte，默认 65535，即64k）
+        bootstrap.option(ChannelOption.SO_SNDBUF, sndBufSize);
+        // 默认：接收端缓冲区大小（单位Byte，默认 65535，即64k）
+        bootstrap.option(ChannelOption.SO_RCVBUF, rcvBufSize);
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline()
@@ -118,7 +119,7 @@ public class NettyClient extends AbstractRemote {
         });
 
         connectAddrList.forEach(this::initConnect);
-
+        channelOptionObjectMap.forEach((k, v)-> bootstrap.option(k, v));
         startFlag = true;
     }
 
@@ -129,6 +130,10 @@ public class NettyClient extends AbstractRemote {
                 initConnect(addr);
             }
         }
+    }
+
+    public <T> void addOption(ChannelOption<T> option, T value) {
+        channelOptionObjectMap.put(option, value);
     }
 
     public <T> NettySender<T> getSender(String addr, String group, String cmd, Class<T> tClass) {

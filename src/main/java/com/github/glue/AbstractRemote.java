@@ -2,6 +2,7 @@ package com.github.glue;
 
 import com.github.glue.event.CommandEventDispatcher;
 import com.github.glue.event.CommandProcessor;
+import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;

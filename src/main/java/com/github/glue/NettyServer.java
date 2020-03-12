@@ -20,6 +20,8 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -63,6 +65,8 @@ public class NettyServer extends AbstractRemote {
     private NettyConnectHandler connectionHandler;
     private NettyServerHandler serverHandler;
     private NettyEncoder encoder;
+    private Map<ChannelOption, Object> channelOptionObjectMap;
+    private Map<ChannelOption, Object> channelChildOptionObjectMap;
 
     private NettyServer() {}
 
@@ -123,6 +127,8 @@ public class NettyServer extends AbstractRemote {
         connectionHandler = new NettyConnectHandler();
         serverHandler = new NettyServerHandler();
         encoder = new NettyEncoder();
+        channelOptionObjectMap = new HashMap<>(8);
+        channelChildOptionObjectMap = new HashMap<>(8);
         this.initFlag = true;
         return this;
     }
@@ -164,6 +170,14 @@ public class NettyServer extends AbstractRemote {
         } catch (InterruptedException e) {
             throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e);
         }
+    }
+
+    public <T> void addOption(ChannelOption<T> option, T value) {
+        channelOptionObjectMap.put(option, value);
+    }
+
+    public <T> void addChildOption(ChannelOption<T> option, T value) {
+        channelChildOptionObjectMap.put(option, value);
     }
 
     private boolean useEpoll() {
