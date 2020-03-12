@@ -18,6 +18,10 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,7 +35,7 @@ import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
 public class NettyClient extends AbstractRemote {
 
     private static final NettyClient INSTANCE = new NettyClient();
-    private boolean initFlag = false;
+    private volatile boolean startFlag = false;
     private Bootstrap bootstrap;
     private EventLoopGroup eventLoopGroupWorker;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
@@ -49,6 +53,10 @@ public class NettyClient extends AbstractRemote {
     @Setter
     private int connectTimeoutMillis = 3000;
     private ClientConnectManager clientConnectManager;
+    /**
+     * 链接的服务端的地址
+     */
+    private Set<String> connectAddrList;
 
     private NettyClient() {
         init();
@@ -80,12 +88,12 @@ public class NettyClient extends AbstractRemote {
 
         bootstrap = new Bootstrap();
         clientConnectManager = new ClientConnectManager(bootstrap);
-        this.initFlag = true;
+        connectAddrList = new HashSet<>(12);
     }
 
-    public void start() {
-        if (!initFlag) {
-            throw new RuntimeException("please first init");
+    public synchronized void start() {
+        if (startFlag) {
+            return;
         }
         this.bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class)
             // 禁用小数据拼接后发送
@@ -108,13 +116,34 @@ public class NettyClient extends AbstractRemote {
                     .addLast(defaultEventExecutorGroup, new NettyClientHandler());
             }
         });
-    }
 
-    public NettyClientConnector getConnector(String addr) {
-        return clientConnectManager.getConnector(addr);
+        connectAddrList.forEach(this::initConnect);
+
+        startFlag = true;
     }
 
     public void addConnect(String addr) {
+        if (connectAddrList.add(addr)) {
+            // 启动
+            if (startFlag) {
+                initConnect(addr);
+            }
+        }
+    }
+
+    public <T> NettySender<T> getSender(String addr, String group, String cmd, Class<T> tClass) {
+        NettyClientConnector nettyClientConnector = clientConnectManager.getConnector(addr);
+        if (null == nettyClientConnector) {
+            return null;
+        }
+        return nettyClientConnector.asSender(group, cmd, tClass);
+    }
+
+    public <T> NettySender getSender(String addr, String cmd, Class<T> tClass) {
+        return getSender(addr, DEFAULT_GROUP_STR, cmd, tClass);
+    }
+
+    private void initConnect(String addr) {
         try {
             clientConnectManager.addConnect(addr);
         } catch (InterruptedException e) {

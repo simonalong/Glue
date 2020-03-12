@@ -74,7 +74,6 @@ public class CommandProcessor {
      * @param ctx     通道上下文
      * @param command 命令
      */
-    @SuppressWarnings("unchecked")
     private void run(ChannelHandlerContext ctx, NettyCommand command) {
         MethodRunnerWrapper runnerWrapper = commandMap.get(command.getEvent());
         try {

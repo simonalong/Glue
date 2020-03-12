@@ -6,6 +6,9 @@ import com.github.glue.controller.ServerGroup1Controller;
 import lombok.SneakyThrows;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author shizi
  * @since 2020/3/4 上午11:43
@@ -18,7 +21,8 @@ public class NettyTest {
     @Test
     @SneakyThrows
     public void testServer() {
-        NettyServer server = NettyServer.getInstance().bind("127.0.0.1:8081");
+        NettyServer server = NettyServer.getInstance();
+        server.bind("127.0.0.1:8081");
         server.addController(new ServerGroup1Controller());
         server.start();
 
@@ -34,9 +38,9 @@ public class NettyTest {
     @SneakyThrows
     public void testClient() {
         NettyClient nettyClient = NettyClient.getInstance();
-        nettyClient.start();
         nettyClient.addConnect("127.0.0.1:8081");
         nettyClient.addController(ClientGroup1Controller.class);
+        nettyClient.start();
 
         int i = 0;
         while (true) {
@@ -60,11 +64,11 @@ public class NettyTest {
     @Test
     public void testInfo() {
         NettyClient nettyClient = NettyClient.getInstance();
-        nettyClient.start();
         nettyClient.addConnect("127.0.0.1:8081");
         nettyClient.addController(ClientGroup1Controller.class);
+        nettyClient.start();
 
-        NettySender<QueryReq> sender = nettyClient.getConnector("127.0.0.1:8081").asSender("group1", "getInfoReq", QueryReq.class);
+        NettySender<QueryReq> sender = nettyClient.getSender("127.0.0.1:8081", "group1", "getInfoReq", QueryReq.class);
         sendWithTime(sender);
     }
 
@@ -78,7 +82,7 @@ public class NettyTest {
         nettyClient.addConnect("127.0.0.1:8081");
         nettyClient.addController(ClientGroup1Controller.class);
 
-        NettySender<QueryReq> sender = nettyClient.getConnector("127.0.0.1:8081").asSender("group1", "getInfoReqHaveErr", QueryReq.class);
+        NettySender<QueryReq> sender = nettyClient.getSender("127.0.0.1:8081", "group1", "getInfoReqHaveErr", QueryReq.class);
         sendWithTime(sender);
     }
 
