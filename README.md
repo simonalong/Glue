@@ -15,8 +15,8 @@ Glue 是一个基于netty设计的通信组件，借鉴spring-web的controller�
  */
 @Test
 public void testServer() {
-    NettyServer server = NettyServer.getInstance().bind("127.0.0.1:8081");
-    // 添加消息接收的位置
+    NettyServer server = NettyServer.getInstance();
+    server.bind("127.0.0.1:8081");
     server.addController(new ServerGroup1Controller());
     server.start();
 
@@ -81,12 +81,10 @@ public class ServerGroup1Controller {
 @Test
 @SneakyThrows
 public void testClient() {
-    NettyClient nettyClient = NettyClient.getInstance();
-    nettyClient.start();
-    // 添加服务端
-    nettyClient.addConnect("127.0.0.1:8081");
-    // 添加消息接收位置
-    nettyClient.addController(ClientGroup1Controller.class);
+    NettyClient client = NettyClient.getInstance();
+    client.addConnect("127.0.0.1:8081");
+    client.addController(ClientGroup1Controller.class);
+    client.start();
 
     int i = 0;
     while (true) {
@@ -234,9 +232,22 @@ public @interface CommandMapping {
 ## API
 ### 服务端：
 ```java
-NettyServer server = NettyServer.getInstance().bind("127.0.0.1:8081");
-// 添加对应的controller即可
-server.addController(new ServerGroup1Controller());
+NettyServer server = NettyServer.getInstance();
+
+// 绑定端口
+server.bind("127.0.0.1:8081");
+
+// 添加Controller
+public void addController(Class<?> controllerClass, ExecutorService executorService);
+public void addController(Object controllerInstance);
+public void addController(Class<?> controllerClass, ExecutorService executorService);
+public void addController(Class<?> controllerClass);
+
+// 添加ChannelOption配置
+public <T> void addOption(ChannelOption<T> option, T value);
+public <T> void addChildOption(ChannelOption<T> option, T value);
+
+// 启动
 server.start();
 ```
 
@@ -245,17 +256,20 @@ server.start();
 #### 方式1
 构造
 ```java
-
 NettyClient nettyClient = NettyClient.getInstance();
 nettyClient.start();
-nettyClient.addConnect("127.0.0.1:8081");
-nettyClient.addController(ClientGroup1Controller.class);
 
-QueryReq queryReq = new QueryReq();
-queryReq.setAge(12L);
-queryReq.setName("simon");
-// 指定 group 指定cmd和 对应的消息体，其中消息体可以随意，但是接受的controller参数必须保持为其父类或者同类
-nettyClient.send("127.0.0.1:8081", "group1", "getDataReq", queryReq);
+// 添加服务端
+public void addConnect(String addr);
+
+// 添加Controller
+public void addController(Class<?> controllerClass, ExecutorService executorService);
+public void addController(Object controllerInstance);
+public void addController(Class<?> controllerClass, ExecutorService executorService);
+public void addController(Class<?> controllerClass);
+
+// 启动
+start();
 ```
 
 send的api
@@ -269,6 +283,13 @@ public Boolean send(String addr, NettyCommand request) {}
 
 // 异步发送
 public void sendAsync(String addr, NettyCommand request, Runnable successCall, Runnable failCall) {}
+
+// NettyServer
+public void sendAll(String group, String cmd, Object data)
+public void sendAll(String cmd, Object data)
+public Boolean send(String addr, String group, String cmd, Object data)
+public Boolean send(String addr, String cmd, Object data)
+public Boolean send(String addr, NettyCommand nettyCommand)
 ```
 
 #### 方式2
@@ -290,7 +311,6 @@ sender.send(queryReq);
 ```
 
 发送api
-
 ```java
 NettySender
 
