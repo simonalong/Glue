@@ -32,7 +32,7 @@ import static com.github.glue.GlueConstant.LOG_PRE;
 public class NettyClient extends AbstractRemote {
 
     private static final NettyClient INSTANCE = new NettyClient();
-    private volatile boolean startFlag = false;
+    private volatile boolean started = false;
     private Bootstrap bootstrap;
     private EventLoopGroup eventLoopGroupWorker;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
@@ -92,7 +92,7 @@ public class NettyClient extends AbstractRemote {
 
     @SuppressWarnings("unchecked")
     public synchronized void start() {
-        if (startFlag) {
+        if (started) {
             return;
         }
         bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class);
@@ -120,13 +120,12 @@ public class NettyClient extends AbstractRemote {
 
         connectAddrList.forEach(this::initConnect);
         channelOptionObjectMap.forEach((k, v) -> bootstrap.option(k, v));
-        startFlag = true;
+        started = true;
     }
 
     public void addConnect(String addr) {
         if (connectAddrList.add(addr)) {
-            // 启动
-            if (startFlag) {
+            if (started) {
                 initConnect(addr);
             }
         }

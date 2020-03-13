@@ -38,7 +38,7 @@ import static com.github.glue.GlueConstant.LOG_PRE;
 public class NettyServer extends AbstractRemote {
 
     private static final NettyServer INSTANCE = new NettyServer();
-    private volatile boolean startFlag = false;
+    private volatile boolean started = false;
     private String addr;
     private EventLoopGroup boss;
     private EventLoopGroup worker;
@@ -141,7 +141,7 @@ public class NettyServer extends AbstractRemote {
 
     @SuppressWarnings("unchecked")
     public synchronized void start() {
-        if (startFlag) {
+        if (started) {
             return;
         }
 
@@ -179,7 +179,7 @@ public class NettyServer extends AbstractRemote {
             if (channelFuture.isSuccess()) {
                 log.info(LOG_PRE + "netty server start success");
             }
-            startFlag = true;
+            started = true;
         } catch (InterruptedException e) {
             log.warn(LOG_PRE + "this.serverBootstrap.bind().sync() InterruptedException", e);
             Thread.currentThread().interrupt();
