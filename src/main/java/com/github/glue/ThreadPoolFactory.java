@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午8:39
@@ -128,8 +130,8 @@ public class ThreadPoolFactory {
             try {
                 executor.getQueue().put(r);
             } catch (InterruptedException e) {
-                log.warn("thread interrupt", e);
-                throw new RuntimeException(e);
+                log.warn(LOG_PRE + "thread interrupt", e);
+                Thread.currentThread().interrupt();
             }
         }
     }

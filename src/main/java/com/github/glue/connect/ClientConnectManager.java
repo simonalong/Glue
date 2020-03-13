@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * 客户端的链接管理器
  *
@@ -20,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientConnectManager implements ConnectManager {
 
     private Bootstrap bootstrap;
-    private Map<String, NettyClientConnector> connectorMap = new ConcurrentHashMap<>();
+    private Map<String, ClientNettyConnector> connectorMap = new ConcurrentHashMap<>();
     @Setter
     private int connectTimeoutMillis = 3000;
 
@@ -30,7 +32,7 @@ public class ClientConnectManager implements ConnectManager {
 
     public synchronized void addConnect(String addr) {
         if (connectorMap.containsKey(addr)) {
-            NettyClientConnector clientConnector = connectorMap.get(addr);
+            ClientNettyConnector clientConnector = connectorMap.get(addr);
             if (clientConnector.getChannelFuture().isDone()) {
                 return;
             } else {
@@ -39,13 +41,13 @@ public class ClientConnectManager implements ConnectManager {
         }
 
         ChannelFuture channelFuture = this.bootstrap.connect(ChannelHelper.string2SocketAddress(addr));
-        this.connectorMap.put(addr, new NettyClientConnector(channelFuture, addr));
-        log.info("createChannel: begin to addConnect remote host[{}] asynchronously", addr);
+        this.connectorMap.put(addr, new ClientNettyConnector(channelFuture, addr));
+        log.info(LOG_PRE + "createChannel: begin to addConnect remote host[{}] asynchronously", addr);
     }
 
     @Override
     public synchronized void addConnect(Connector connector) {
-        if (!(connector instanceof NettyClientConnector)) {
+        if (!(connector instanceof ClientNettyConnector)) {
             return;
         }
         String addr = connector.getAddr();
@@ -58,35 +60,35 @@ public class ClientConnectManager implements ConnectManager {
             connectorMap.remove(addr);
         }
 
-        connectorMap.put(addr, (NettyClientConnector) connector);
-        log.info("createChannel: begin to addConnect remote host[{}] asynchronously", addr);
+        connectorMap.put(addr, (ClientNettyConnector) connector);
+        log.info(LOG_PRE + "createChannel: begin to addConnect remote host[{}] asynchronously", addr);
     }
 
     @Override
     public void closeConnect(Channel channel) {
         channel.close()
             .addListener(
-                future -> log.info("closeChannel: close the connection to remote address[{}] result: {}", ChannelHelper.parseChannelRemoteAddr(channel), future.isSuccess()));
+                future -> log.info(LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", ChannelHelper.parseChannelRemoteAddr(channel), future.isSuccess()));
     }
 
-    public NettyClientConnector getConnector(String addr) {
+    public ClientNettyConnector getConnector(String addr) {
         if (!connectorMap.containsKey(addr)) {
             return null;
         }
 
-        NettyClientConnector connector = connectorMap.get(addr);
+        ClientNettyConnector connector = connectorMap.get(addr);
 
         if (connector != null) {
             ChannelFuture channelFuture = connector.getChannelFuture();
             if (channelFuture.awaitUninterruptibly(connectTimeoutMillis)) {
                 if (connector.isOK()) {
-                    log.info("createChannel: addConnect remote host[{}] success, {}", addr, channelFuture.toString());
+                    log.info(LOG_PRE + "createChannel: addConnect remote host[{}] success, {}", addr, channelFuture.toString());
                     return connector;
                 } else {
-                    log.warn("createChannel: addConnect remote host[" + addr + "] failed, " + channelFuture.toString(), channelFuture.cause());
+                    log.warn(LOG_PRE + "createChannel: addConnect remote host[" + addr + "] failed, " + channelFuture.toString(), channelFuture.cause());
                 }
             } else {
-                log.warn("createChannel: addConnect remote host[{}] timeout {}ms, {}", addr, connectTimeoutMillis, channelFuture.toString());
+                log.warn(LOG_PRE + "createChannel: addConnect remote host[{}] timeout {}ms, {}", addr, connectTimeoutMillis, channelFuture.toString());
             }
         }
         return null;

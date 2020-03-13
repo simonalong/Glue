@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/4 下午2:09
@@ -24,7 +26,7 @@ public class NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
                 out.add(command);
             }
         } catch (Exception e) {
-            log.error("decode exception, " + ChannelHelper.parseChannelRemoteAddr(ctx.channel()), e);
+            log.error(LOG_PRE + "decode exception, " + ChannelHelper.parseChannelRemoteAddr(ctx.channel()), e);
             ChannelHelper.closeChannel(ctx.channel());
         }
     }

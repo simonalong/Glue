@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午6:20
@@ -28,7 +30,7 @@ public final class CommandEventDispatcher {
         if (channelPairMap.containsKey(request.getEvent().getGroup())) {
             channelPairMap.get(request.getEvent().getGroup()).process(ctx, request);
         } else {
-            log.warn("discard msg: because not found the processor of command:[{}]", request.getEvent());
+            log.warn(LOG_PRE + "discard msg: because not found the processor of command:[{}]", request.getEvent());
         }
     }
 }

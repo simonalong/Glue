@@ -2,7 +2,7 @@ package com.github.glue;
 
 import com.github.glue.coder.NettyDecoder;
 import com.github.glue.coder.NettyEncoder;
-import com.github.glue.connect.NettyServerConnector;
+import com.github.glue.connect.ServerNettyConnector;
 import com.github.glue.connect.ServerConnectManager;
 import com.github.glue.event.CommandEventDispatcher;
 import io.netty.bootstrap.ServerBootstrap;
@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
+import static com.github.glue.GlueConstant.LOG_PRE;
 
 /**
  * @author shizi
@@ -176,11 +177,12 @@ public class NettyServer extends AbstractRemote {
         try {
             ChannelFuture channelFuture = serverBootstrap.bind(ChannelHelper.string2SocketAddress(addr)).sync();
             if (channelFuture.isSuccess()) {
-                log.info("netty server start success");
+                log.info(LOG_PRE + "netty server start success");
             }
             startFlag = true;
         } catch (InterruptedException e) {
-            throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e);
+            log.warn(LOG_PRE + "this.serverBootstrap.bind().sync() InterruptedException", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -194,13 +196,13 @@ public class NettyServer extends AbstractRemote {
 
     @SuppressWarnings("unchecked")
     public void sendAll(String group, String cmd, Object data) {
-        Collection<NettyServerConnector> serverConnectors = serverConnectManager.getAllConnector();
+        Collection<ServerNettyConnector> serverConnectors = serverConnectManager.getAllConnector();
         serverConnectors.forEach(connector -> connector.asSender(group, cmd).send(data));
     }
 
     @SuppressWarnings("unchecked")
     public void sendAll(String cmd, Object data) {
-        Collection<NettyServerConnector> serverConnectors = serverConnectManager.getAllConnector();
+        Collection<ServerNettyConnector> serverConnectors = serverConnectManager.getAllConnector();
         serverConnectors.forEach(connector -> connector.asSender(cmd).send(data));
     }
 
@@ -214,7 +216,7 @@ public class NettyServer extends AbstractRemote {
 
     @SuppressWarnings("unchecked")
     public void send(String addr, NettyCommand nettyCommand) {
-        NettyServerConnector serverConnector = serverConnectManager.getConnector(addr);
+        ServerNettyConnector serverConnector = serverConnectManager.getConnector(addr);
         if(null == serverConnector){
             return;
         }
@@ -244,14 +246,14 @@ public class NettyServer extends AbstractRemote {
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-            log.info("netty server pipeline: channelRegistered {}", remoteAddress);
+            log.info(LOG_PRE + "netty server pipeline: channelRegistered {}", remoteAddress);
             super.channelRegistered(ctx);
         }
 
         @Override
         public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-            log.info("netty server pipeline: channelUnregistered, the channel[{}]", remoteAddress);
+            log.info(LOG_PRE + "netty server pipeline: channelUnregistered, the channel[{}]", remoteAddress);
             super.channelUnregistered(ctx);
         }
 
@@ -263,7 +265,7 @@ public class NettyServer extends AbstractRemote {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-            log.info("netty server pipeline: channelActive, the channel[{}]", remoteAddress);
+            log.info(LOG_PRE + "netty server pipeline: channelActive, the channel[{}]", remoteAddress);
             super.channelActive(ctx);
 
             serverConnectManager.addConnect(ctx.channel());
@@ -277,7 +279,7 @@ public class NettyServer extends AbstractRemote {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-            log.info("netty server pipeline: channelInactive, the channel[{}]", remoteAddress);
+            log.info(LOG_PRE + "netty server pipeline: channelInactive, the channel[{}]", remoteAddress);
             super.channelInactive(ctx);
 
             serverConnectManager.closeConnect(ctx.channel());
@@ -295,7 +297,7 @@ public class NettyServer extends AbstractRemote {
                 IdleStateEvent event = (IdleStateEvent) evt;
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-                    log.warn("netty server pipeline: IDLE exception [{}]", remoteAddress);
+                    log.warn(LOG_PRE + "netty server pipeline: IDLE exception [{}]", remoteAddress);
 
                     serverConnectManager.closeConnect(ctx.channel());
                 }
@@ -307,7 +309,7 @@ public class NettyServer extends AbstractRemote {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
-            log.warn("netty server pipeline: address [{}],  exceptionCaught exception.", remoteAddress, cause);
+            log.warn(LOG_PRE + "netty server pipeline: address [{}],  exceptionCaught exception.", remoteAddress, cause);
 
             serverConnectManager.closeConnect(ctx.channel());
         }

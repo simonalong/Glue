@@ -11,5 +11,8 @@ public interface GlueConstant {
      */
     String DEFAULT_GROUP_STR = "_default_";
 
-    long LOCK_TIMEOUT_MILLIS = 3000;
+    /**
+     * 日志前缀
+     */
+    String LOG_PRE = "[Glue-Netty] ";
 }

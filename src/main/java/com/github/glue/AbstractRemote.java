@@ -9,6 +9,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午10:26
@@ -51,7 +53,7 @@ public class AbstractRemote {
             c.setAccessible(true);
             addController(c.newInstance(), executorService);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            log.error("add controller fail, class: {}", controllerClass, e);
+            log.error(LOG_PRE + "add controller fail, class: {}", controllerClass, e);
         }
     }
 
@@ -62,7 +64,7 @@ public class AbstractRemote {
             c.setAccessible(true);
             addController(c.newInstance());
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            log.error("add controller fail, class: {}", controllerClass, e);
+            log.error(LOG_PRE + "add controller fail, class: {}", controllerClass, e);
         }
     }
 }

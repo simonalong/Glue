@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午3:02
@@ -44,7 +46,7 @@ public class ChannelHelper {
     public void closeChannel(Channel channel) {
         final String addrRemote = parseChannelRemoteAddr(channel);
         channel.close()
-            .addListener((ChannelFutureListener) future -> log.info("closeChannel: close the connection to remote address[{}] result: {}", addrRemote, future.isSuccess()));
+            .addListener((ChannelFutureListener) future -> log.info(LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", addrRemote, future.isSuccess()));
     }
 
     public static SocketAddress string2SocketAddress(final String addr) {

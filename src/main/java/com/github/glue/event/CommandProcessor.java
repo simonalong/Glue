@@ -21,6 +21,7 @@ import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
+import static com.github.glue.GlueConstant.LOG_PRE;
 
 /**
  * 命令解析器
@@ -168,7 +169,7 @@ public class CommandProcessor {
             });
             return this;
         } else {
-            log.warn("class:{} cannot parse for not have annotation: NettyController", instance.getClass().getCanonicalName());
+            log.warn(LOG_PRE + "class:{} cannot parse for not have annotation: NettyController", instance.getClass().getCanonicalName());
             return null;
         }
     }
@@ -219,7 +220,7 @@ public class CommandProcessor {
                         return method.invoke(instance, parameterValue);
                     }
                 } catch (InvocationTargetException e) {
-                    log.error("class:{} method:{} run fail", instance.getClass().getName(), method.getName(), e.getTargetException());
+                    log.error(LOG_PRE + "class:{} method:{} run fail", instance.getClass().getName(), method.getName(), e.getTargetException());
                     throw e.getTargetException();
                 }
             }

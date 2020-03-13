@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/4 下午6:03
@@ -32,17 +34,19 @@ public class NettySender<T> {
         AtomicBoolean result = new AtomicBoolean(false);
         channel.writeAndFlush(command).addListener((ChannelFutureListener) f -> {
             if (f.isSuccess()) {
-                log.info("send command success");
+                log.info(LOG_PRE + "send command success");
                 result.set(true);
                 countDownLatch.countDown();
                 return;
             }
-            log.warn("send command to channel [{}] failed.", addr);
+            log.warn(LOG_PRE + "send command to channel [{}] failed.", addr);
             countDownLatch.countDown();
         });
         try {
             countDownLatch.await();
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            log.warn(LOG_PRE + "thread interrupt", e);
+            Thread.currentThread().interrupt();
         }
         return false;
     }
@@ -51,13 +55,13 @@ public class NettySender<T> {
         NettyCommand command = new NettyCommand(group, cmd, data);
         channel.writeAndFlush(command).addListener((ChannelFutureListener) f -> {
             if (f.isSuccess()) {
-                log.info("send command success");
+                log.info(LOG_PRE + "send command success");
                 if (null != successCall) {
                     successCall.run();
                 }
                 return;
             }
-            log.warn("send command to channel [{}] failed.", addr);
+            log.warn(LOG_PRE + "send command to channel [{}] failed.", addr);
             if (null != failCall) {
                 failCall.run();
             }

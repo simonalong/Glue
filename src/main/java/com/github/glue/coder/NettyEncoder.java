@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
 
+import static com.github.glue.GlueConstant.LOG_PRE;
+
 /**
  * @author shizi
  * @since 2020/3/3 下午1:28
@@ -28,7 +30,7 @@ public class NettyEncoder extends MessageToByteEncoder<NettyCommand> {
             out.writeBytes(request.encodeHead(bodyByte.length));
             out.writeBytes(bodyByte);
         } catch (Throwable e) {
-            log.error("encodeHead exception, " + ChannelHelper.parseChannelRemoteAddr(ctx.channel()), e);
+            log.error(LOG_PRE + "encodeHead exception, " + ChannelHelper.parseChannelRemoteAddr(ctx.channel()), e);
             if (request != null) {
                 log.error(request.toString());
             }

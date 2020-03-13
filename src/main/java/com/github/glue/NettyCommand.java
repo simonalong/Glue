@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import static com.github.glue.GlueConstant.DEFAULT_GROUP_STR;
+import static com.github.glue.GlueConstant.LOG_PRE;
 
 /**
  * @author shizi
@@ -77,7 +78,7 @@ public class NettyCommand {
         byteBuffer.readBytes(tagBytes);
         if (!Arrays.equals(tagBytes, TAG)) {
             String notSupportMsgTag = new String(tagBytes, CHARSET_UTF8);
-            log.warn("not support message tag: {}", notSupportMsgTag);
+            log.warn(LOG_PRE + "not support message tag: {}", notSupportMsgTag);
             return null;
         }
 
