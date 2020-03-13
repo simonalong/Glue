@@ -34,7 +34,6 @@ public class NettySender<T> {
         AtomicBoolean result = new AtomicBoolean(false);
         channel.writeAndFlush(command).addListener((ChannelFutureListener) f -> {
             if (f.isSuccess()) {
-                log.info(LOG_PRE + "send command success");
                 result.set(true);
                 countDownLatch.countDown();
                 return;

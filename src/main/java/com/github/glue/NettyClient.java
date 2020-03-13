@@ -49,7 +49,7 @@ public class NettyClient extends AbstractRemote {
     private int rcvBufSize = 65535;
     @Setter
     private int connectTimeoutMillis = 3000;
-    private ClientConnectManager clientConnectManager;
+    private ClientConnectManager connectManager;
     /**
      * 链接的服务端的地址
      */
@@ -85,7 +85,7 @@ public class NettyClient extends AbstractRemote {
         });
 
         bootstrap = new Bootstrap();
-        clientConnectManager = new ClientConnectManager(bootstrap);
+        connectManager = new ClientConnectManager(bootstrap);
         connectAddrList = new HashSet<>(12);
         channelOptionObjectMap = new HashMap<>();
     }
@@ -136,7 +136,7 @@ public class NettyClient extends AbstractRemote {
     }
 
     public <T> NettySender<T> getSender(String addr, String group, String cmd, Class<T> tClass) {
-        ClientNettyConnector clientNettyConnector = clientConnectManager.getConnector(addr);
+        ClientNettyConnector clientNettyConnector = connectManager.getConnector(addr);
         if (null == clientNettyConnector) {
             return null;
         }
@@ -148,15 +148,16 @@ public class NettyClient extends AbstractRemote {
     }
 
     private void initConnect(String addr) {
-        clientConnectManager.addConnect(addr);
+        connectManager.addConnect(addr);
     }
 
+    @SuppressWarnings("unchecked")
     public Boolean send(String addr, String group, String cmd, Object data) {
-        ClientNettyConnector connector = clientConnectManager.getConnector(addr);
+        ClientNettyConnector connector = connectManager.getConnector(addr);
         if (null != connector) {
             return connector.asSender(group, cmd).send(data);
         }
-        log.warn(LOG_PRE + "the connector of addr[{}] not found", addr);
+        log.warn(LOG_PRE + "the connector of addr[{}] not available", addr);
         return false;
     }
 
@@ -164,21 +165,23 @@ public class NettyClient extends AbstractRemote {
         return send(addr, DEFAULT_GROUP_STR, cmd, data);
     }
 
+    @SuppressWarnings("unchecked")
     public Boolean send(String addr, NettyCommand request) {
-        ClientNettyConnector connector = clientConnectManager.getConnector(addr);
+        ClientNettyConnector connector = connectManager.getConnector(addr);
         if (null != connector) {
             return connector.asSender(request.getEvent()).send(request.getData());
         }
-        log.warn(LOG_PRE + "the connector of addr[{}] not found", addr);
+        log.warn(LOG_PRE + "the connector of addr[{}] not available", addr);
         return false;
     }
 
     @SuppressWarnings("unchecked")
     public void sendAsync(String addr, NettyCommand request, Runnable successCall, Runnable failCall) {
-        ClientNettyConnector connector = clientConnectManager.getConnector(addr);
+        ClientNettyConnector connector = connectManager.getConnector(addr);
         if (null != connector) {
             connector.asSender(request.getEvent()).sendAsync(request.getData(), successCall, failCall);
         }
+        log.warn(LOG_PRE + "the connector of addr[{}] not available", addr);
     }
 
     class NettyClientHandler extends SimpleChannelInboundHandler<NettyCommand> {
@@ -228,7 +231,7 @@ public class NettyClient extends AbstractRemote {
             log.info(LOG_PRE + "netty client pipeline: channelInactive, the channel[{}]", remoteAddress);
             super.channelInactive(ctx);
 
-            clientConnectManager.closeConnect(ctx.channel());
+            connectManager.closeConnect(ctx.channel());
         }
 
         /**
@@ -245,7 +248,7 @@ public class NettyClient extends AbstractRemote {
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
                     log.warn(LOG_PRE + "netty client pipeline: IDLE exception [{}]", remoteAddress);
-                    clientConnectManager.closeConnect(ctx.channel());
+                    connectManager.closeConnect(ctx.channel());
                 }
             }
 
@@ -257,7 +260,7 @@ public class NettyClient extends AbstractRemote {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
             log.warn(LOG_PRE + "netty client pipeline: address [{}],  exceptionCaught exception.", remoteAddress, cause);
 
-            clientConnectManager.closeConnect(ctx.channel());
+            connectManager.closeConnect(ctx.channel());
         }
     }
 }

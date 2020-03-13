@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.github.glue.GlueConstant.LOG_PRE;
-
 /**
  * 服务端的链接管理器
  *
@@ -19,47 +17,46 @@ import static com.github.glue.GlueConstant.LOG_PRE;
 @Slf4j
 public class ServerConnectManager implements ConnectManager {
 
-    private Map<String, ServerNettyConnector> channelMap = new ConcurrentHashMap<>();
+    private Map<String, ServerNettyConnector> connectorMap = new ConcurrentHashMap<>();
 
     @Override
     public void addConnect(Connector connector) {
         Channel channel = connector.getChannel();
         String addr = ChannelHelper.parseChannelRemoteAddr(channel);
-        channelMap.computeIfAbsent(addr, address -> new ServerNettyConnector(channel, address));
+        connectorMap.computeIfAbsent(addr, address -> new ServerNettyConnector(channel, address));
     }
 
     public void addConnect(Channel channel){
         final String addr = ChannelHelper.parseChannelRemoteAddr(channel);
-        if (channelMap.containsKey(addr)) {
+        if (connectorMap.containsKey(addr)) {
             return;
         }
 
-        channelMap.put(addr, new ServerNettyConnector(channel, addr));
+        connectorMap.put(addr, new ServerNettyConnector(channel, addr));
     }
 
     @Override
     public void closeConnect(Channel channel) {
-        final String addr = ChannelHelper.parseChannelRemoteAddr(channel);
-        if (!channelMap.containsKey(addr)) {
+        String addr = ChannelHelper.parseChannelRemoteAddr(channel);
+        if(!connectorMap.containsKey(addr)){
             return;
         }
-
         try {
-            channel.close().addListener(future -> log.info(LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", addr, future.isSuccess()));
+            connectorMap.get(addr).close();
         } finally {
-            channelMap.remove(addr);
+            connectorMap.remove(addr);
         }
     }
 
     public ServerNettyConnector getConnector(String addr) {
-        if (channelMap.containsKey(addr)) {
+        if (connectorMap.containsKey(addr)) {
             return null;
         }
 
-        return channelMap.get(addr);
+        return connectorMap.get(addr);
     }
 
     public Collection<ServerNettyConnector> getAllConnector(){
-        return channelMap.values();
+        return connectorMap.values();
     }
 }

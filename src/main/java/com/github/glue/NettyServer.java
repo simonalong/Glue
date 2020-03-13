@@ -72,7 +72,7 @@ public class NettyServer extends AbstractRemote {
     private NettyEncoder encoder;
     private Map<ChannelOption, Object> channelOptionObjectMap;
     private Map<ChannelOption, Object> channelChildOptionObjectMap;
-    private ServerConnectManager serverConnectManager;
+    private ServerConnectManager connectManager;
 
     private NettyServer() {}
 
@@ -135,7 +135,7 @@ public class NettyServer extends AbstractRemote {
         encoder = new NettyEncoder();
         channelOptionObjectMap = new HashMap<>(8);
         channelChildOptionObjectMap = new HashMap<>(8);
-        serverConnectManager = new ServerConnectManager();
+        connectManager = new ServerConnectManager();
         return this;
     }
 
@@ -196,31 +196,34 @@ public class NettyServer extends AbstractRemote {
 
     @SuppressWarnings("unchecked")
     public void sendAll(String group, String cmd, Object data) {
-        Collection<ServerNettyConnector> serverConnectors = serverConnectManager.getAllConnector();
+        Collection<ServerNettyConnector> serverConnectors = connectManager.getAllConnector();
         serverConnectors.forEach(connector -> connector.asSender(group, cmd).send(data));
     }
 
     @SuppressWarnings("unchecked")
     public void sendAll(String cmd, Object data) {
-        Collection<ServerNettyConnector> serverConnectors = serverConnectManager.getAllConnector();
+        Collection<ServerNettyConnector> serverConnectors = connectManager.getAllConnector();
         serverConnectors.forEach(connector -> connector.asSender(cmd).send(data));
     }
 
-    public void send(String addr, String group, String cmd, Object data) {
-        send(addr, new NettyCommand(group, cmd, data));
+    public Boolean send(String addr, String group, String cmd, Object data) {
+        return send(addr, new NettyCommand(group, cmd, data));
     }
 
-    public void send(String addr, String cmd, Object data) {
-        send(addr, DEFAULT_GROUP_STR, cmd, data);
+    public Boolean send(String addr, String cmd, Object data) {
+        return send(addr, DEFAULT_GROUP_STR, cmd, data);
     }
 
     @SuppressWarnings("unchecked")
-    public void send(String addr, NettyCommand nettyCommand) {
-        ServerNettyConnector serverConnector = serverConnectManager.getConnector(addr);
-        if(null == serverConnector){
-            return;
+    public Boolean send(String addr, NettyCommand nettyCommand) {
+        ServerNettyConnector serverConnector = connectManager.getConnector(addr);
+        if(null != serverConnector){
+            serverConnector.asSender(nettyCommand.getEvent()).send(nettyCommand.getData());
+            return true;
         }
-        serverConnector.asSender(nettyCommand.getEvent()).send(nettyCommand.getData());
+
+        log.warn(LOG_PRE + "the connector of addr[{}] not available", addr);
+        return false;
     }
 
     private boolean useEpoll() {
@@ -268,7 +271,7 @@ public class NettyServer extends AbstractRemote {
             log.info(LOG_PRE + "netty server pipeline: channelActive, the channel[{}]", remoteAddress);
             super.channelActive(ctx);
 
-            serverConnectManager.addConnect(ctx.channel());
+            connectManager.addConnect(ctx.channel());
         }
 
         /**
@@ -282,7 +285,7 @@ public class NettyServer extends AbstractRemote {
             log.info(LOG_PRE + "netty server pipeline: channelInactive, the channel[{}]", remoteAddress);
             super.channelInactive(ctx);
 
-            serverConnectManager.closeConnect(ctx.channel());
+            connectManager.closeConnect(ctx.channel());
         }
 
         /**
@@ -299,7 +302,7 @@ public class NettyServer extends AbstractRemote {
                     final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
                     log.warn(LOG_PRE + "netty server pipeline: IDLE exception [{}]", remoteAddress);
 
-                    serverConnectManager.closeConnect(ctx.channel());
+                    connectManager.closeConnect(ctx.channel());
                 }
             }
 
@@ -311,7 +314,7 @@ public class NettyServer extends AbstractRemote {
             final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
             log.warn(LOG_PRE + "netty server pipeline: address [{}],  exceptionCaught exception.", remoteAddress, cause);
 
-            serverConnectManager.closeConnect(ctx.channel());
+            connectManager.closeConnect(ctx.channel());
         }
     }
 }
