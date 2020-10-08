@@ -248,14 +248,14 @@ public class NettyServer extends AbstractRemote {
 
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-            final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
+            final String remoteAddress = ChannelHelper.parseChannelRemoteAddress(ctx.channel());
             log.info(LOG_PRE + "netty server pipeline: channelRegistered {}", remoteAddress);
             super.channelRegistered(ctx);
         }
 
         @Override
         public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-            final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
+            final String remoteAddress = ChannelHelper.parseChannelRemoteAddress(ctx.channel());
             log.info(LOG_PRE + "netty server pipeline: channelUnregistered, the channel[{}]", remoteAddress);
             super.channelUnregistered(ctx);
         }
@@ -267,7 +267,7 @@ public class NettyServer extends AbstractRemote {
          */
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
+            final String remoteAddress = ChannelHelper.parseChannelRemoteAddress(ctx.channel());
             log.info(LOG_PRE + "netty server pipeline: channelActive, the channel[{}]", remoteAddress);
             super.channelActive(ctx);
 
@@ -281,7 +281,7 @@ public class NettyServer extends AbstractRemote {
          */
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
+            final String remoteAddress = ChannelHelper.parseChannelRemoteAddress(ctx.channel());
             log.info(LOG_PRE + "netty server pipeline: channelInactive, the channel[{}]", remoteAddress);
             super.channelInactive(ctx);
 
@@ -299,7 +299,7 @@ public class NettyServer extends AbstractRemote {
             if (evt instanceof IdleStateEvent) {
                 IdleStateEvent event = (IdleStateEvent) evt;
                 if (event.state().equals(IdleState.ALL_IDLE)) {
-                    final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
+                    final String remoteAddress = ChannelHelper.parseChannelRemoteAddress(ctx.channel());
                     log.warn(LOG_PRE + "netty server pipeline: IDLE exception [{}]", remoteAddress);
 
                     connectManager.closeConnect(ctx.channel());
@@ -311,7 +311,7 @@ public class NettyServer extends AbstractRemote {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            final String remoteAddress = ChannelHelper.parseChannelRemoteAddr(ctx.channel());
+            final String remoteAddress = ChannelHelper.parseChannelRemoteAddress(ctx.channel());
             log.warn(LOG_PRE + "netty server pipeline: address [{}],  exceptionCaught exception.", remoteAddress, cause);
 
             connectManager.closeConnect(ctx.channel());

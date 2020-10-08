@@ -2,13 +2,13 @@ package com.simonalong.glue.controller;
 
 import com.simonalong.glue.NettyErrorResponse;
 import com.simonalong.glue.annotation.CommandMapping;
-import com.simonalong.glue.annotation.NettyController;
+import com.simonalong.glue.annotation.GlueController;
 
 /**
  * @author shizi
  * @since 2020/3/4 下午2:22
  */
-@NettyController("group1")
+@GlueController("group1")
 public class ClientGroup1Controller {
 
     /**

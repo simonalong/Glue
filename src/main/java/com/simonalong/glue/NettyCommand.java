@@ -11,6 +11,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.simonalong.glue.GlueConstant.LOG_PRE;
@@ -24,7 +25,7 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
 @NoArgsConstructor
 public class NettyCommand {
 
-    private final static Charset CHARSET_UTF8 = Charset.forName("UTF-8");
+    private final static Charset CHARSET_UTF8 = StandardCharsets.UTF_8;
     /**
      * 用字符 glue（胶水） 作为消息标识
      */

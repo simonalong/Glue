@@ -12,7 +12,7 @@ import static com.simonalong.glue.GlueConstant.DEFAULT_GROUP_STR;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface NettyController {
+public @interface GlueController {
 
     /**
      * 对数据请求分组

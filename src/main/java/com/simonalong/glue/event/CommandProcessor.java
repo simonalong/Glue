@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.simonalong.glue.NettyCommand;
 import com.simonalong.glue.NettyErrorResponse;
 import com.simonalong.glue.annotation.CommandMapping;
-import com.simonalong.glue.annotation.NettyController;
+import com.simonalong.glue.annotation.GlueController;
 import com.simonalong.glue.ThreadPoolFactory;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
@@ -100,17 +100,17 @@ public class CommandProcessor {
         }
     }
 
-    private void generateExecutorFromAnnotation(NettyController nettyController) {
+    private void generateExecutorFromAnnotation(GlueController glueController) {
         if (null != this.executorService) {
             return;
         }
         String nullStr = "null";
-        String executor = nettyController.executor();
+        String executor = glueController.executor();
         if (nullStr.equals(executor)) {
             return;
         }
 
-        int coreSize = nettyController.coreSize();
+        int coreSize = glueController.coreSize();
         String commandEventProcessor = "Netty_server_event_processor";
         switch (executor) {
             case "single":
@@ -132,10 +132,10 @@ public class CommandProcessor {
 
     private CommandProcessor doParse() {
         Assert.assertNotNull(tClass);
-        if (tClass.isAnnotationPresent(NettyController.class)) {
-            NettyController nettyController = (NettyController) tClass.getDeclaredAnnotation(NettyController.class);
-            this.group = getGroup(nettyController);
-            generateExecutorFromAnnotation(nettyController);
+        if (tClass.isAnnotationPresent(GlueController.class)) {
+            GlueController glueController = (GlueController) tClass.getDeclaredAnnotation(GlueController.class);
+            this.group = getGroup(glueController);
+            generateExecutorFromAnnotation(glueController);
             Stream.of(tClass.getDeclaredMethods()).forEach(method -> {
                 if (method.isAnnotationPresent(CommandMapping.class)) {
                     CommandMapping commandMapping = method.getDeclaredAnnotation(CommandMapping.class);
@@ -174,12 +174,12 @@ public class CommandProcessor {
         }
     }
 
-    private String getGroup(NettyController nettyController) {
-        if (!DEFAULT_GROUP_STR.equals(nettyController.group())) {
-            return nettyController.group();
+    private String getGroup(GlueController glueController) {
+        if (!DEFAULT_GROUP_STR.equals(glueController.group())) {
+            return glueController.group();
         }
 
-        return nettyController.value();
+        return glueController.value();
     }
 
     static class MethodRunnerWrapper {

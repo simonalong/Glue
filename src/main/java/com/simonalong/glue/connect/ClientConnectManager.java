@@ -83,7 +83,7 @@ public class ClientConnectManager implements ConnectManager {
 
     @Override
     public void closeConnect(Channel channel) {
-        String addr = ChannelHelper.parseChannelRemoteAddr(channel);
+        String addr = ChannelHelper.parseChannelRemoteAddress(channel);
         if (!connectorMap.containsKey(addr)) {
             return;
         }

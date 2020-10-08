@@ -22,12 +22,12 @@ public class ServerConnectManager implements ConnectManager {
     @Override
     public void addConnect(Connector connector) {
         Channel channel = connector.getChannel();
-        String addr = ChannelHelper.parseChannelRemoteAddr(channel);
+        String addr = ChannelHelper.parseChannelRemoteAddress(channel);
         connectorMap.computeIfAbsent(addr, address -> new ServerNettyConnector(channel, address));
     }
 
     public void addConnect(Channel channel){
-        final String addr = ChannelHelper.parseChannelRemoteAddr(channel);
+        final String addr = ChannelHelper.parseChannelRemoteAddress(channel);
         if (connectorMap.containsKey(addr)) {
             return;
         }
@@ -37,7 +37,7 @@ public class ServerConnectManager implements ConnectManager {
 
     @Override
     public void closeConnect(Channel channel) {
-        String addr = ChannelHelper.parseChannelRemoteAddr(channel);
+        String addr = ChannelHelper.parseChannelRemoteAddress(channel);
         if(!connectorMap.containsKey(addr)){
             return;
         }

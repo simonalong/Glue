@@ -1,7 +1,7 @@
 package com.simonalong.glue.controller;
 
 import com.simonalong.glue.annotation.CommandMapping;
-import com.simonalong.glue.annotation.NettyController;
+import com.simonalong.glue.annotation.GlueController;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2020/3/4 下午2:21
  */
 @Slf4j
-@NettyController(value = "group1", executor = "fixed")
+@GlueController(value = "group1", executor = "fixed")
 public class ServerGroup1Controller {
 
     /**

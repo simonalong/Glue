@@ -26,7 +26,7 @@ public class NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
                 out.add(command);
             }
         } catch (Exception e) {
-            log.error(LOG_PRE + "decode exception, " + ChannelHelper.parseChannelRemoteAddr(ctx.channel()), e);
+            log.error(LOG_PRE + "decode exception, " + ChannelHelper.parseChannelRemoteAddress(ctx.channel()), e);
             ChannelHelper.closeChannel(ctx.channel());
         }
     }

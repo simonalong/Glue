@@ -22,7 +22,7 @@ public class ChannelHelper {
      * @param channel channel
      * @return ip地址
      */
-    public String parseChannelRemoteAddr(final Channel channel) {
+    public String parseChannelRemoteAddress(final Channel channel) {
         if (null == channel) {
             return "";
         }
@@ -42,12 +42,12 @@ public class ChannelHelper {
     }
 
     public void closeChannel(Channel channel) {
-        final String addrRemote = parseChannelRemoteAddr(channel);
+        final String addressRemote = parseChannelRemoteAddress(channel);
         channel.close()
-            .addListener((ChannelFutureListener) future -> log.info(GlueConstant.LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", addrRemote, future.isSuccess()));
+            .addListener((ChannelFutureListener) future -> log.info(GlueConstant.LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", addressRemote, future.isSuccess()));
     }
 
-    public static SocketAddress string2SocketAddress(final String addr) {
+    public SocketAddress string2SocketAddress(final String addr) {
         int split = addr.lastIndexOf(":");
         String host = addr.substring(0, split);
         String port = addr.substring(split + 1);
