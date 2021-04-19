@@ -207,23 +207,23 @@ public class NettyServer extends AbstractRemote {
         serverConnectors.forEach(connector -> connector.asSender(cmd).send(data));
     }
 
-    public Boolean send(String addr, String group, String cmd, Object data) {
-        return send(addr, new NettyCommand(group, cmd, data));
+    public Boolean send(String address, String group, String cmd, Object data) {
+        return send(address, new NettyCommand(group, cmd, data));
     }
 
-    public Boolean send(String addr, String cmd, Object data) {
-        return send(addr, DEFAULT_GROUP_STR, cmd, data);
+    public Boolean send(String address, String cmd, Object data) {
+        return send(address, DEFAULT_GROUP_STR, cmd, data);
     }
 
     @SuppressWarnings("unchecked")
-    public Boolean send(String addr, NettyCommand nettyCommand) {
-        ServerNettyConnector serverConnector = connectManager.getConnector(addr);
+    public Boolean send(String address, NettyCommand nettyCommand) {
+        ServerNettyConnector serverConnector = connectManager.getConnector(address);
         if(null != serverConnector){
             serverConnector.asSender(nettyCommand.getEvent()).send(nettyCommand.getData());
             return true;
         }
 
-        log.warn(LOG_PRE + "the connector of addr[{}] not available", addr);
+        log.warn(LOG_PRE + "the connector of address[{}] not available", address);
         return false;
     }
 

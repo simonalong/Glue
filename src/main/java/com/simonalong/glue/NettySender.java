@@ -25,7 +25,7 @@ public class NettySender<T> {
     private String group;
     private String cmd;
     private Channel channel;
-    private String addr;
+    private String address;
     private Class<T> tClass;
 
     public Boolean send(T data) {
@@ -38,7 +38,7 @@ public class NettySender<T> {
                 countDownLatch.countDown();
                 return;
             }
-            log.warn(LOG_PRE + "send command to channel [{}] failed.", addr);
+            log.warn(LOG_PRE + "send command to channel [{}] failed.", address);
             countDownLatch.countDown();
         });
         try {
@@ -60,7 +60,7 @@ public class NettySender<T> {
                 }
                 return;
             }
-            log.warn(LOG_PRE + "send command to channel [{}] failed.", addr);
+            log.warn(LOG_PRE + "send command to channel [{}] failed.", address);
             if (null != failCall) {
                 failCall.run();
             }

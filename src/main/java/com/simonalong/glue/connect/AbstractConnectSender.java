@@ -8,12 +8,13 @@ import com.simonalong.glue.GlueConstant;
  * @author shizi
  * @since 2020/3/12 下午9:43
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractConnectSender extends AbstractConnector implements Connector {
 
     public <T> NettySender<T> asSender(String group, String cmd, Class<T> tClass) {
         NettySender<T> sender = new NettySender<>();
         sender.setChannel(getChannel());
-        sender.setAddr(getAddr());
+        sender.setAddress(getAddress());
         sender.setCmd(cmd);
         sender.setGroup(group);
         sender.setTClass(tClass);

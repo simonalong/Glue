@@ -260,7 +260,7 @@ NettyClient nettyClient = NettyClient.getInstance();
 nettyClient.start();
 
 // 添加服务端
-public void addConnect(String addr);
+public void addConnect(String address);
 
 // 添加Controller
 public void addController(Class<?> controllerClass, ExecutorService executorService);
@@ -277,19 +277,19 @@ send的api
 // NettyClient
 
 // 同步发送
-public Boolean send(String addr, String group, String cmd, Object data) {}
-public Boolean send(String addr, String cmd, Object data) {}
-public Boolean send(String addr, NettyCommand request) {}
+public Boolean send(String address, String group, String cmd, Object data) {}
+public Boolean send(String address, String cmd, Object data) {}
+public Boolean send(String address, NettyCommand request) {}
 
 // 异步发送
-public void sendAsync(String addr, NettyCommand request, Runnable successCall, Runnable failCall) {}
+public void sendAsync(String address, NettyCommand request, Runnable successCall, Runnable failCall) {}
 
 // NettyServer
 public void sendAll(String group, String cmd, Object data)
 public void sendAll(String cmd, Object data)
-public Boolean send(String addr, String group, String cmd, Object data)
-public Boolean send(String addr, String cmd, Object data)
-public Boolean send(String addr, NettyCommand nettyCommand)
+public Boolean send(String address, String group, String cmd, Object data)
+public Boolean send(String address, String cmd, Object data)
+public Boolean send(String address, NettyCommand nettyCommand)
 ```
 
 #### 方式2

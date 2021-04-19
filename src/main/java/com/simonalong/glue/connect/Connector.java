@@ -18,7 +18,7 @@ public interface Connector extends AutoCloseable{
      * 连接器对应的地址
      * @return 地址
      */
-    String getAddr();
+    String getAddress();
 
     /**
      * 通道是否可用

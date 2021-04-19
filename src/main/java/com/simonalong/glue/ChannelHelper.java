@@ -27,15 +27,15 @@ public class ChannelHelper {
             return "";
         }
         SocketAddress remote = channel.remoteAddress();
-        final String addr = remote != null ? remote.toString() : "";
+        final String address = remote != null ? remote.toString() : "";
 
-        if (addr.length() > 0) {
-            int index = addr.lastIndexOf("/");
+        if (address.length() > 0) {
+            int index = address.lastIndexOf("/");
             if (index >= 0) {
-                return addr.substring(index + 1);
+                return address.substring(index + 1);
             }
 
-            return addr;
+            return address;
         }
 
         return "";
@@ -47,10 +47,10 @@ public class ChannelHelper {
             .addListener((ChannelFutureListener) future -> log.info(GlueConstant.LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", addressRemote, future.isSuccess()));
     }
 
-    public SocketAddress string2SocketAddress(final String addr) {
-        int split = addr.lastIndexOf(":");
-        String host = addr.substring(0, split);
-        String port = addr.substring(split + 1);
+    public SocketAddress string2SocketAddress(final String address) {
+        int split = address.lastIndexOf(":");
+        String host = address.substring(0, split);
+        String port = address.substring(split + 1);
         return new InetSocketAddress(host, Integer.parseInt(port));
     }
 }

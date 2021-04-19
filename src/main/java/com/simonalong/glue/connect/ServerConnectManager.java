@@ -22,38 +22,38 @@ public class ServerConnectManager implements ConnectManager {
     @Override
     public void addConnect(Connector connector) {
         Channel channel = connector.getChannel();
-        String addr = ChannelHelper.parseChannelRemoteAddress(channel);
-        connectorMap.computeIfAbsent(addr, address -> new ServerNettyConnector(channel, address));
+        String address = ChannelHelper.parseChannelRemoteAddress(channel);
+        connectorMap.computeIfAbsent(address, addressTem -> new ServerNettyConnector(channel, addressTem));
     }
 
     public void addConnect(Channel channel){
-        final String addr = ChannelHelper.parseChannelRemoteAddress(channel);
-        if (connectorMap.containsKey(addr)) {
+        final String address = ChannelHelper.parseChannelRemoteAddress(channel);
+        if (connectorMap.containsKey(address)) {
             return;
         }
 
-        connectorMap.put(addr, new ServerNettyConnector(channel, addr));
+        connectorMap.put(address, new ServerNettyConnector(channel, address));
     }
 
     @Override
     public void closeConnect(Channel channel) {
-        String addr = ChannelHelper.parseChannelRemoteAddress(channel);
-        if(!connectorMap.containsKey(addr)){
+        String address = ChannelHelper.parseChannelRemoteAddress(channel);
+        if(!connectorMap.containsKey(address)){
             return;
         }
         try {
-            connectorMap.get(addr).close();
+            connectorMap.get(address).close();
         } finally {
-            connectorMap.remove(addr);
+            connectorMap.remove(address);
         }
     }
 
-    public ServerNettyConnector getConnector(String addr) {
-        if (connectorMap.containsKey(addr)) {
+    public ServerNettyConnector getConnector(String address) {
+        if (connectorMap.containsKey(address)) {
             return null;
         }
 
-        return connectorMap.get(addr);
+        return connectorMap.get(address);
     }
 
     public Collection<ServerNettyConnector> getAllConnector(){

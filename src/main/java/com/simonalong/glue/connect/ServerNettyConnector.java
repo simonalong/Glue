@@ -10,12 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServerNettyConnector extends AbstractConnectSender {
 
-    private Channel channel;
-    private String addr;
+    private final Channel channel;
+    private final String address;
 
-    public ServerNettyConnector(Channel channel, String addr) {
+    public ServerNettyConnector(Channel channel, String address) {
         this.channel = channel;
-        this.addr = addr;
+        this.address = address;
     }
 
     @Override
@@ -24,8 +24,8 @@ public class ServerNettyConnector extends AbstractConnectSender {
     }
 
     @Override
-    public String getAddr() {
-        return addr;
+    public String getAddress() {
+        return address;
     }
 
     @Override

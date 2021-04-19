@@ -10,11 +10,11 @@ import io.netty.channel.ChannelFuture;
 public class ClientNettyConnector extends AbstractConnectSender{
 
     private final ChannelFuture channelFuture;
-    private String addr;
+    private final String address;
 
-    public ClientNettyConnector(ChannelFuture channelFuture, String addr) {
+    public ClientNettyConnector(ChannelFuture channelFuture, String address) {
         this.channelFuture = channelFuture;
-        this.addr = addr;
+        this.address = address;
     }
 
     @Override
@@ -23,8 +23,8 @@ public class ClientNettyConnector extends AbstractConnectSender{
     }
 
     @Override
-    public String getAddr() {
-        return addr;
+    public String getAddress() {
+        return address;
     }
 
     @Override

@@ -12,6 +12,6 @@ public abstract class AbstractConnector implements Connector {
 
     @Override
     public void close() {
-        getChannel().close().addListener(future -> log.info(GlueConstant.LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", getAddr(), future.isSuccess()));
+        getChannel().close().addListener(future -> log.info(GlueConstant.LOG_PRE + "closeChannel: close the connection to remote address[{}] result: {}", getAddress(), future.isSuccess()));
     }
 }

@@ -33,32 +33,32 @@ public class ClientConnectManager implements ConnectManager {
     /**
      * 添加链接
      *
-     * @param addr 链接地址
+     * @param address 链接地址
      * @return true：处理后地址可用，false：地址不存在或者不可用
      */
-    public synchronized Boolean addConnect(String addr) {
-        if (connectorMap.containsKey(addr)) {
-            ClientNettyConnector clientConnector = connectorMap.get(addr);
+    public synchronized Boolean addConnect(String address) {
+        if (connectorMap.containsKey(address)) {
+            ClientNettyConnector clientConnector = connectorMap.get(address);
             if (clientConnector.isOK()) {
                 return true;
             } else if (!clientConnector.getChannelFuture().isDone()) {
                 return true;
             } else {
-                connectorMap.remove(addr);
+                connectorMap.remove(address);
             }
         }
 
-        ChannelFuture channelFuture = bootstrap.connect(ChannelHelper.string2SocketAddress(addr));
+        ChannelFuture channelFuture = bootstrap.connect(ChannelHelper.string2SocketAddress(address));
         if (channelFuture.awaitUninterruptibly(connectTimeoutMillis)) {
             if (null != channelFuture.channel() && channelFuture.channel().isActive()) {
-                log.info(LOG_PRE + "createChannel: addConnect remote host[{}] success, {}", addr, channelFuture.toString());
-                connectorMap.put(addr, new ClientNettyConnector(channelFuture, addr));
+                log.info(LOG_PRE + "createChannel: addConnect remote host[{}] success, {}", address, channelFuture.toString());
+                connectorMap.put(address, new ClientNettyConnector(channelFuture, address));
                 return true;
             } else {
-                log.warn(LOG_PRE + "createChannel: addConnect remote host[" + addr + "] failed, " + channelFuture.toString(), channelFuture.cause());
+                log.warn(LOG_PRE + "createChannel: addConnect remote host[" + address + "] failed, " + channelFuture.toString(), channelFuture.cause());
             }
         } else {
-            log.warn(LOG_PRE + "createChannel: addConnect remote host[{}] timeout {}ms, {}", addr, connectTimeoutMillis, channelFuture.toString());
+            log.warn(LOG_PRE + "createChannel: addConnect remote host[{}] timeout {}ms, {}", address, connectTimeoutMillis, channelFuture.toString());
         }
         return false;
     }
@@ -68,38 +68,38 @@ public class ClientConnectManager implements ConnectManager {
         if (!(connector instanceof ClientNettyConnector)) {
             return;
         }
-        String addr = connector.getAddr();
-        if (connectorMap.containsKey(addr)) {
+        String address = connector.getAddress();
+        if (connectorMap.containsKey(address)) {
             try {
-                connectorMap.get(addr).close();
+                connectorMap.get(address).close();
             } finally {
-                connectorMap.remove(addr);
+                connectorMap.remove(address);
             }
         }
 
-        connectorMap.put(addr, (ClientNettyConnector) connector);
-        log.info(LOG_PRE + "createChannel: begin to addConnect remote host[{}] asynchronously", addr);
+        connectorMap.put(address, (ClientNettyConnector) connector);
+        log.info(LOG_PRE + "createChannel: begin to addConnect remote host[{}] asynchronously", address);
     }
 
     @Override
     public void closeConnect(Channel channel) {
-        String addr = ChannelHelper.parseChannelRemoteAddress(channel);
-        if (!connectorMap.containsKey(addr)) {
+        String address = ChannelHelper.parseChannelRemoteAddress(channel);
+        if (!connectorMap.containsKey(address)) {
             return;
         }
         try {
-            connectorMap.get(addr).close();
+            connectorMap.get(address).close();
         } finally {
-            connectorMap.remove(addr);
+            connectorMap.remove(address);
         }
     }
 
-    public ClientNettyConnector getConnector(String addr) {
-        if (!connectorMap.containsKey(addr)) {
-            if (!addConnect(addr)) {
+    public ClientNettyConnector getConnector(String address) {
+        if (!connectorMap.containsKey(address)) {
+            if (!addConnect(address)) {
                 return null;
             }
         }
-        return connectorMap.get(addr);
+        return connectorMap.get(address);
     }
 }

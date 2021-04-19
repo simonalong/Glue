@@ -125,10 +125,10 @@ public class NettyClient extends AbstractRemote {
         started = true;
     }
 
-    public void addConnect(String addr) {
-        if (connectAddrList.add(addr)) {
+    public void addConnect(String address) {
+        if (connectAddrList.add(address)) {
             if (started) {
-                initConnect(addr);
+                initConnect(address);
             }
         }
     }
@@ -159,12 +159,12 @@ public class NettyClient extends AbstractRemote {
         if (null != connector) {
             return connector.asSender(group, cmd).send(data);
         }
-        log.warn(LOG_PRE + "the connector of addr[{}] not available", address);
+        log.warn(LOG_PRE + "the connector of address[{}] not available", address);
         return false;
     }
 
-    public Boolean send(String addr, String cmd, Object data) {
-        return send(addr, DEFAULT_GROUP_STR, cmd, data);
+    public Boolean send(String address, String cmd, Object data) {
+        return send(address, DEFAULT_GROUP_STR, cmd, data);
     }
 
     @SuppressWarnings("unchecked")
@@ -173,7 +173,7 @@ public class NettyClient extends AbstractRemote {
         if (null != connector) {
             return connector.asSender(request.getEvent()).send(request.getData());
         }
-        log.warn(LOG_PRE + "the connector of addr[{}] not available", address);
+        log.warn(LOG_PRE + "the connector of address[{}] not available", address);
         return false;
     }
 
@@ -183,7 +183,7 @@ public class NettyClient extends AbstractRemote {
         if (null != connector) {
             connector.asSender(request.getEvent()).sendAsync(request.getData(), successCall, failCall);
         }
-        log.warn(LOG_PRE + "the connector of addr[{}] not available", address);
+        log.warn(LOG_PRE + "the connector of address[{}] not available", address);
     }
 
     static class NettyClientHandler extends SimpleChannelInboundHandler<NettyCommand> {
