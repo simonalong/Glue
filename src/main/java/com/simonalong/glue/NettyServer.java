@@ -39,7 +39,7 @@ public class NettyServer extends AbstractRemote {
 
     private static final NettyServer INSTANCE = new NettyServer();
     private volatile boolean started = false;
-    private String addr;
+    private String address;
     private EventLoopGroup boss;
     private EventLoopGroup worker;
     private ServerBootstrap serverBootstrap;
@@ -80,11 +80,11 @@ public class NettyServer extends AbstractRemote {
         return INSTANCE;
     }
 
-    public NettyServer bind(String addr) {
-        this.addr = addr;
+    public NettyServer bind(String address) {
+        this.address = address;
         if (useEpoll()) {
             this.boss = new EpollEventLoopGroup(bossThreadPoolSize, new ThreadFactory() {
-                private AtomicInteger threadIndex = new AtomicInteger(0);
+                private final AtomicInteger threadIndex = new AtomicInteger(0);
 
                 @Override
                 public Thread newThread(Runnable r) {
@@ -93,7 +93,7 @@ public class NettyServer extends AbstractRemote {
             });
 
             this.worker = new EpollEventLoopGroup(workerThreadPoolSize, new ThreadFactory() {
-                private AtomicInteger threadIndex = new AtomicInteger(0);
+                private final AtomicInteger threadIndex = new AtomicInteger(0);
 
                 @Override
                 public Thread newThread(Runnable r) {
@@ -102,7 +102,7 @@ public class NettyServer extends AbstractRemote {
             });
         } else {
             this.boss = new NioEventLoopGroup(1, new ThreadFactory() {
-                private AtomicInteger threadIndex = new AtomicInteger(0);
+                private final AtomicInteger threadIndex = new AtomicInteger(0);
 
                 @Override
                 public Thread newThread(Runnable r) {
@@ -111,7 +111,7 @@ public class NettyServer extends AbstractRemote {
             });
 
             this.worker = new NioEventLoopGroup(workerThreadPoolSize, new ThreadFactory() {
-                private AtomicInteger threadIndex = new AtomicInteger(0);
+                private final AtomicInteger threadIndex = new AtomicInteger(0);
 
                 @Override
                 public Thread newThread(Runnable r) {
@@ -121,7 +121,7 @@ public class NettyServer extends AbstractRemote {
         }
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(workerThreadPoolSize, new ThreadFactory() {
-            private AtomicInteger threadIndex = new AtomicInteger(0);
+            private final AtomicInteger threadIndex = new AtomicInteger(0);
 
             @Override
             public Thread newThread(Runnable r) {
@@ -176,7 +176,7 @@ public class NettyServer extends AbstractRemote {
         channelChildOptionObjectMap.forEach((k, v) -> serverBootstrap.childOption(k, v));
 
         try {
-            ChannelFuture channelFuture = serverBootstrap.bind(ChannelHelper.string2SocketAddress(addr)).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(ChannelHelper.string2SocketAddress(address)).sync();
             if (channelFuture.isSuccess()) {
                 log.info(LOG_PRE + "netty server start success");
             }
@@ -236,7 +236,7 @@ public class NettyServer extends AbstractRemote {
     }
 
     @ChannelHandler.Sharable
-    class NettyServerHandler extends SimpleChannelInboundHandler<NettyCommand> {
+    static class NettyServerHandler extends SimpleChannelInboundHandler<NettyCommand> {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, NettyCommand request) {
