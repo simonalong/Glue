@@ -146,6 +146,7 @@ public class NettyServer extends AbstractRemote {
         }
 
         serverBootstrap.group(this.boss, this.worker);
+        // NioServerSocketChannel：异步的服务器端 TCP Socket 连接.
         serverBootstrap.channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class);
         // 默认：链接队列大小
         serverBootstrap.option(ChannelOption.SO_BACKLOG, 1024);

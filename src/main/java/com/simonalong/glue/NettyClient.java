@@ -54,6 +54,7 @@ public class NettyClient extends AbstractRemote {
      * 链接的服务端的地址
      */
     private Set<String> connectAddrList;
+    @SuppressWarnings("rawtypes")
     private Map<ChannelOption, Object> channelOptionObjectMap;
 
     private NettyClient() {
@@ -95,6 +96,7 @@ public class NettyClient extends AbstractRemote {
         if (started) {
             return;
         }
+        // NioSocketChannel：异步的客户端 TCP Socket 连接.
         bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class);
         // 默认：禁用小数据拼接后发送
         bootstrap.option(ChannelOption.TCP_NODELAY, true);
