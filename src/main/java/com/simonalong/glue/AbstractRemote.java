@@ -20,7 +20,7 @@ public class AbstractRemote {
     /**
      * 添加对应的Controller
      *
-     * @param controllerInstance 添加{@link NettyServer.NettyConnectHandler}注解的类的实例
+     * @param controllerInstance 添加{@link GlueServer.NettyConnectHandler}注解的类的实例
      * @param executorService    线程池
      */
     public void addController(Object controllerInstance, ExecutorService executorService) {
@@ -31,7 +31,7 @@ public class AbstractRemote {
      * 添加命令处理类
      * <p>
      * 注意：
-     * 参数类需要有注解{@link NettyServer.NettyConnectHandler}，否则没有用
+     * 参数类需要有注解{@link GlueServer.NettyConnectHandler}，否则没有用
      *
      * @param controllerInstance 处理类实例
      */
@@ -42,7 +42,7 @@ public class AbstractRemote {
     /**
      * 添加对应的Controller
      *
-     * @param controllerClass 添加{@link NettyServer.NettyConnectHandler}注解的类
+     * @param controllerClass 添加{@link GlueServer.NettyConnectHandler}注解的类
      * @param executorService 线程池
      */
     public void addController(Class<?> controllerClass, ExecutorService executorService) {

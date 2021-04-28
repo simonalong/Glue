@@ -75,7 +75,7 @@ public class ThreadPoolFactory {
      *                              discardOldest（丢弃队列中最老的）
      *                              callRun（直接运行）
      *                              block（阻塞）
-     * @return
+     * @return 线程池执行器
      */
     public ThreadPoolExecutor getPool(String threadName, Integer coreSize, Integer maxSize, Integer aliveMilliSecondTime, BlockingQueue<Runnable> blockingQueue,
         Boolean alloCoreThreadTimeout, String rejectHandler) {

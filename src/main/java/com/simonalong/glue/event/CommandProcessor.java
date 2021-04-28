@@ -38,7 +38,7 @@ public class CommandProcessor {
     /**
      * 当前类型
      */
-    private Class tClass;
+    private Class<?> tClass;
     private Object instance;
     private ExecutorService executorService;
 

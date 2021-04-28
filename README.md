@@ -96,7 +96,7 @@ public void testClient() {
         QueryReq queryReq = new QueryReq();
         queryReq.setAge(12L);
         queryReq.setName("simon");
-        nettyClient.send("127.0.0.1:8081", "group1", "getDataReq", queryReq);
+        glueClient.send("127.0.0.1:8081", "group1", "getDataReq", queryReq);
 
         Thread.sleep(1000);
         i++;
@@ -256,8 +256,8 @@ server.start();
 #### 方式1
 构造
 ```java
-NettyClient nettyClient = NettyClient.getInstance();
-nettyClient.start();
+NettyClient glueClient = NettyClient.getInstance();
+glueClient.start();
 
 // 添加服务端
 public void addConnect(String address);
@@ -295,13 +295,13 @@ public Boolean send(String address, NettyCommand nettyCommand)
 #### 方式2
 构造
 ```java
-NettyClient nettyClient = NettyClient.getInstance();
-nettyClient.start();
-nettyClient.addConnect("127.0.0.1:8081");
-nettyClient.addController(ClientGroup1Controller.class);
+NettyClient glueClient = NettyClient.getInstance();
+glueClient.start();
+glueClient.addConnect("127.0.0.1:8081");
+glueClient.addController(ClientGroup1Controller.class);
 
 // 构造发射器
-NettySender<QueryReq> sender = nettyClient.getConnector("127.0.0.1:8081").asSender("group1", "getInfoReq", QueryReq.class);
+NettySender<QueryReq> sender = glueClient.getConnector("127.0.0.1:8081").asSender("group1", "getInfoReq", QueryReq.class);
 QueryReq queryReq = new QueryReq();
 queryReq.setAge(12L);
 queryReq.setName("simon");

@@ -29,9 +29,9 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
  * @since 2020/3/3 下午12:18
  */
 @Slf4j
-public class NettyClient extends AbstractRemote {
+public class GlueClient extends AbstractRemote {
 
-    private static final NettyClient INSTANCE = new NettyClient();
+    private static final GlueClient INSTANCE = new GlueClient();
     private volatile boolean started = false;
     private Bootstrap bootstrap;
     private EventLoopGroup eventLoopGroupWorker;
@@ -57,11 +57,11 @@ public class NettyClient extends AbstractRemote {
     @SuppressWarnings("rawtypes")
     private Map<ChannelOption, Object> channelOptionObjectMap;
 
-    private NettyClient() {
+    private GlueClient() {
         init();
     }
 
-    public static NettyClient getInstance() {
+    public static GlueClient getInstance() {
         return INSTANCE;
     }
 

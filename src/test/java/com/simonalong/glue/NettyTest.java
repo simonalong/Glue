@@ -19,7 +19,7 @@ public class NettyTest {
     @Test
     @SneakyThrows
     public void testServer() {
-        NettyServer server = NettyServer.getInstance();
+        GlueServer server = GlueServer.getInstance();
         server.bind("127.0.0.1:8081");
         server.addController(new ServerGroup1Controller());
         server.start();
@@ -35,7 +35,7 @@ public class NettyTest {
     @Test
     @SneakyThrows
     public void testClient() {
-        NettyClient client = NettyClient.getInstance();
+        GlueClient client = GlueClient.getInstance();
         client.addConnect("127.0.0.1:8081");
         client.addController(ClientGroup1Controller.class);
         client.start();
@@ -61,12 +61,12 @@ public class NettyTest {
      */
     @Test
     public void testInfo() {
-        NettyClient nettyClient = NettyClient.getInstance();
-        nettyClient.addConnect("127.0.0.1:8081");
-        nettyClient.addController(ClientGroup1Controller.class);
-        nettyClient.start();
+        GlueClient glueClient = GlueClient.getInstance();
+        glueClient.addConnect("127.0.0.1:8081");
+        glueClient.addController(ClientGroup1Controller.class);
+        glueClient.start();
 
-        NettySender<QueryReq> sender = nettyClient.getSender("127.0.0.1:8081", "group1", "getInfoReq", QueryReq.class);
+        NettySender<QueryReq> sender = glueClient.getSender("127.0.0.1:8081", "group1", "getInfoReq", QueryReq.class);
         sendWithTime(sender);
     }
 
@@ -75,12 +75,12 @@ public class NettyTest {
      */
     @Test
     public void testErrorRsp() {
-        NettyClient nettyClient = NettyClient.getInstance();
-        nettyClient.start();
-        nettyClient.addConnect("127.0.0.1:8081");
-        nettyClient.addController(ClientGroup1Controller.class);
+        GlueClient glueClient = GlueClient.getInstance();
+        glueClient.start();
+        glueClient.addConnect("127.0.0.1:8081");
+        glueClient.addController(ClientGroup1Controller.class);
 
-        NettySender<QueryReq> sender = nettyClient.getSender("127.0.0.1:8081", "group1", "getInfoReqHaveErr", QueryReq.class);
+        NettySender<QueryReq> sender = glueClient.getSender("127.0.0.1:8081", "group1", "getInfoReqHaveErr", QueryReq.class);
         sendWithTime(sender);
     }
 
@@ -108,7 +108,7 @@ public class NettyTest {
     @Test
     @SneakyThrows
     public void testServerSender() {
-        NettyServer server = NettyServer.getInstance();
+        GlueServer server = GlueServer.getInstance();
         server.bind("127.0.0.1:8081");
         server.addController(new ServerGroup1Controller());
         server.start();

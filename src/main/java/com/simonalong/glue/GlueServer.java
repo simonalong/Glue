@@ -35,9 +35,9 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
  * @since 2020/3/3 下午12:18
  */
 @Slf4j
-public class NettyServer extends AbstractRemote {
+public class GlueServer extends AbstractRemote {
 
-    private static final NettyServer INSTANCE = new NettyServer();
+    private static final GlueServer INSTANCE = new GlueServer();
     private volatile boolean started = false;
     private String address;
     private EventLoopGroup boss;
@@ -74,13 +74,13 @@ public class NettyServer extends AbstractRemote {
     private Map<ChannelOption, Object> channelChildOptionObjectMap;
     private ServerConnectManager connectManager;
 
-    private NettyServer() {}
+    private GlueServer() {}
 
-    public static NettyServer getInstance() {
+    public static GlueServer getInstance() {
         return INSTANCE;
     }
 
-    public NettyServer bind(String address) {
+    public GlueServer bind(String address) {
         this.address = address;
         if (useEpoll()) {
             this.boss = new EpollEventLoopGroup(bossThreadPoolSize, new ThreadFactory() {

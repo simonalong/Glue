@@ -58,6 +58,7 @@ public class NettyCommand {
     /**
      * 采用tlv 方式编码：tag + length + value
      *
+     * @param bodyLength body长度
      * @return ByteBuffer数据
      */
     public ByteBuf encodeHead(int bodyLength) {
