@@ -46,7 +46,7 @@ public class AbstractRemote {
      * @param executorService 线程池
      */
     public void addController(Class<?> controllerClass, ExecutorService executorService) {
-        Constructor c;
+        Constructor<?> c;
         try {
             c = controllerClass.getDeclaredConstructor();
             c.setAccessible(true);
@@ -57,7 +57,7 @@ public class AbstractRemote {
     }
 
     public void addController(Class<?> controllerClass) {
-        Constructor c;
+        Constructor<?> c;
         try {
             c = controllerClass.getDeclaredConstructor();
             c.setAccessible(true);

@@ -89,9 +89,7 @@ public class NettyCommand {
             // 减去TAG的长度，和存储数据length的长度
             byte[] bodyBytes = new byte[length - 4 - 4];
             byteBuffer.readBytes(bodyBytes);
-
-            String tem = new String(bodyBytes, CHARSET_UTF8);
-            return JSON.parseObject(tem, NettyCommand.class);
+            return JSON.parseObject(new String(bodyBytes, CHARSET_UTF8), NettyCommand.class);
         }
         return null;
     }
