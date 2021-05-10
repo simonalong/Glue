@@ -18,7 +18,7 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
 @UtilityClass
 public final class CommandEventDispatcher {
 
-    private Map<String, CommandProcessor> channelPairMap = new ConcurrentHashMap<>();
+    private final Map<String, CommandProcessor> channelPairMap = new ConcurrentHashMap<>();
 
     public void addCmdProcessor(CommandProcessor commandProcessor) {
         if (null != commandProcessor) {

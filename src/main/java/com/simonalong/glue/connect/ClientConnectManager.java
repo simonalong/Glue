@@ -21,8 +21,8 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
 @Slf4j
 public class ClientConnectManager implements ConnectManager {
 
-    private Bootstrap bootstrap;
-    private Map<String, ClientNettyConnector> connectorMap = new ConcurrentHashMap<>();
+    private final Bootstrap bootstrap;
+    private final Map<String, ClientNettyConnector> connectorMap = new ConcurrentHashMap<>();
     @Setter
     private int connectTimeoutMillis = 3000;
 

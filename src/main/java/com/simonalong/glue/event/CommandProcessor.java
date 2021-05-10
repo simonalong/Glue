@@ -32,7 +32,7 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
 @Slf4j
 public class CommandProcessor {
 
-    private Map<CommandEvent, MethodRunnerWrapper> commandMap = new ConcurrentHashMap<>();
+    private final Map<CommandEvent, MethodRunnerWrapper> commandMap = new ConcurrentHashMap<>();
     @Getter
     private String group;
     /**

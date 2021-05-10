@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ServerConnectManager implements ConnectManager {
 
-    private Map<String, ServerNettyConnector> connectorMap = new ConcurrentHashMap<>();
+    private final Map<String, ServerNettyConnector> connectorMap = new ConcurrentHashMap<>();
 
     @Override
     public void addConnect(Connector connector) {
