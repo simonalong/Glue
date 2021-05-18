@@ -10,6 +10,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static com.simonalong.glue.GlueConstant.LOG_PRE;
 
@@ -21,7 +22,7 @@ import static com.simonalong.glue.GlueConstant.LOG_PRE;
 @ChannelHandler.Sharable
 public class NettyEncoder extends MessageToByteEncoder<NettyCommand> {
 
-    private final static Charset CHARSET_UTF8 = Charset.forName("UTF-8");
+    private final static Charset CHARSET_UTF8 = StandardCharsets.UTF_8;
 
     @Override
     public void encode(ChannelHandlerContext ctx, NettyCommand request, ByteBuf out) {
