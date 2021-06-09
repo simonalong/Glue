@@ -10,6 +10,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -112,6 +113,7 @@ public class GlueClient extends AbstractRemote {
             @Override
             public void initChannel(SocketChannel ch) {
                 ch.pipeline()
+                    .addLast(defaultEventExecutorGroup, new SslHandler(SslEngineFactory.getClientSslEngine()))
                     .addLast(defaultEventExecutorGroup, new NettyEncoder())
                     .addLast(defaultEventExecutorGroup, new NettyDecoder())
                     .addLast(defaultEventExecutorGroup, new IdleStateHandler(0, 0, heartTime))
